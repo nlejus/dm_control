@@ -217,16 +217,7 @@ def qpos_from_site_pose(physics,
     logging.warning('Failed to converge after %i steps: err_norm=%3g',
                     steps, err_norm)
 
-  if not inplace:
-    # Our temporary copy of physics.data is about to go out of scope, and when
-    # it does the underlying mjData pointer will be freed and physics.data.qpos
-    # will be a view onto a block of deallocated memory. We therefore need to
-    # make a copy of physics.data.qpos while physics.data is still alive.
-    qpos = physics.data.qpos.copy()
-  else:
-    # If we're modifying physics.data in place then it's fine to return a view.
-    qpos = physics.data.qpos
-
+  qpos = physics.data.qpos if inplace else physics.data.qpos.copy()
   return IKResult(qpos=qpos, err_norm=err_norm, steps=steps, success=success)
 
 
@@ -252,9 +243,8 @@ def nullspace_method(jac_joints, delta, regularization_strength=0.0):
   """
   hess_approx = jac_joints.T.dot(jac_joints)
   joint_delta = jac_joints.T.dot(delta)
-  if regularization_strength > 0:
-    # L2 regularization
-    hess_approx += np.eye(hess_approx.shape[0]) * regularization_strength
-    return np.linalg.solve(hess_approx, joint_delta)
-  else:
+  if regularization_strength <= 0:
     return np.linalg.lstsq(hess_approx, joint_delta, rcond=-1)[0]
+  # L2 regularization
+  hess_approx += np.eye(hess_approx.shape[0]) * regularization_strength
+  return np.linalg.solve(hess_approx, joint_delta)

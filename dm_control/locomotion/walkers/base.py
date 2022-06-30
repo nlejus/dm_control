@@ -28,10 +28,9 @@ import numpy as np
 def _make_readonly_float64_copy(value):
   if np.isscalar(value):
     return np.float64(value)
-  else:
-    out = np.array(value, dtype=np.float64)
-    out.flags.writeable = False
-    return out
+  out = np.array(value, dtype=np.float64)
+  out.flags.writeable = False
+  return out
 
 
 class WalkerPose(collections.namedtuple(
@@ -132,13 +131,10 @@ class Walker(composer.Robot, metaclass=abc.ABCMeta):
 
   @property
   def action_spec(self):
-    if not self.actuators:
-      minimum, maximum = (), ()
-    else:
-      minimum, maximum = zip(*[
-          a.ctrlrange if a.ctrlrange is not None else (-1., 1.)
-          for a in self.actuators
-      ])
+    minimum, maximum = (zip(*[
+        a.ctrlrange if a.ctrlrange is not None else (-1.0, 1.0)
+        for a in self.actuators
+    ]) if self.actuators else ((), ()))
     return specs.BoundedArray(
         shape=(len(self.actuators),),
         dtype=float,

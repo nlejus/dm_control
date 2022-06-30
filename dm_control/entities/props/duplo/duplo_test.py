@@ -55,11 +55,11 @@ class DuploTest(parameterized.TestCase):
 
   @parameterized.parameters([p._asdict() for p in duplo._STUD_SIZE_PARAMS])
   def test_separation_force_fixed(self, easy_align, flanges):
-    forces = []
-    for seed in range(3):
-      forces.append(self.measure_separation_force(
-          seed=seed, easy_align=easy_align, flanges=flanges, variation=0.0))
-
+    forces = [
+        self.measure_separation_force(
+            seed=seed, easy_align=easy_align, flanges=flanges, variation=0.0)
+        for seed in range(3)
+    ]
     # Separation forces should all be identical since variation == 0.0.
     np.testing.assert_array_equal(forces[0], forces[1:])
 
@@ -69,20 +69,21 @@ class DuploTest(parameterized.TestCase):
 
   @parameterized.parameters([p._asdict() for p in duplo._STUD_SIZE_PARAMS])
   def test_separation_force_distribution(self, easy_align, flanges):
-    forces = []
-    for seed in range(10):
-      forces.append(self.measure_separation_force(
-          seed=seed, easy_align=easy_align, flanges=flanges, variation=1.0))
-
+    forces = [
+        self.measure_separation_force(
+            seed=seed, easy_align=easy_align, flanges=flanges, variation=1.0)
+        for seed in range(10)
+    ]
     self.assertGreater(min(forces), EXPECTED_MIN_FORCE)
     self.assertLess(max(forces), EXPECTED_MAX_FORCE)
     median_force = np.median(forces)
     median_force_delta = median_force - EXPECTED_MEDIAN_FORCE
     self.assertLess(
-        abs(median_force_delta), EXPECTED_MEDIAN_FORCE_TOL,
-        msg=('Expected median separation force to be {}+/-{} N, got {} N.'
-             .format(EXPECTED_MEDIAN_FORCE, EXPECTED_MEDIAN_FORCE_TOL,
-                     median_force)))
+        abs(median_force_delta),
+        EXPECTED_MEDIAN_FORCE_TOL,
+        msg=
+        f'Expected median separation force to be {EXPECTED_MEDIAN_FORCE}+/-{EXPECTED_MEDIAN_FORCE_TOL} N, got {median_force} N.',
+    )
 
   @parameterized.parameters([p._asdict() for p in duplo._STUD_SIZE_PARAMS])
   def test_separation_force_identical_with_same_seed(self, easy_align, flanges):

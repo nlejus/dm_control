@@ -106,10 +106,7 @@ class _Attribute(metaclass=abc.ABCMeta):
     self._assign(string)
 
   def to_xml_string(self, prefix_root):  # pylint: disable=unused-argument
-    if self._value is None:
-      return None
-    else:
-      return str(self._value)
+    return None if self._value is None else str(self._value)
 
   @property
   def conflict_allowed(self):
@@ -125,7 +122,7 @@ class String(_Attribute):
 
   def _assign(self, value):
     if not isinstance(value, str):
-      raise ValueError('Expect a string value: got {}'.format(value))
+      raise ValueError(f'Expect a string value: got {value}')
     elif not value:
       self.clear()
     else:
@@ -142,8 +139,7 @@ class Integer(_Attribute):
       if float_value != int_value:
         raise ValueError
     except ValueError:
-      raise ValueError(
-          'Expect an integer value: got {}'.format(value)) from None
+      raise ValueError(f'Expect an integer value: got {value}') from None
     self._value = int_value
 
 
@@ -154,7 +150,7 @@ class Float(_Attribute):
     try:
       float_value = float(value)
     except ValueError:
-      raise ValueError('Expect a float value: got {}'.format(value)) from None
+      raise ValueError(f'Expect a float value: got {value}') from None
     self._value = float_value
 
 
@@ -175,8 +171,9 @@ class Keyword(_Attribute):
       try:
         self._value = self._valid_values[str(value).lower()]
       except KeyError:
-        raise ValueError('Expect keyword to be one of {} but got: {}'.format(
-            list(self._valid_values.values()), value)) from None
+        raise ValueError(
+            f'Expect keyword to be one of {list(self._valid_values.values())} but got: {value}'
+        ) from None
 
   @property
   def valid_values(self):
@@ -202,21 +199,20 @@ class Array(_Attribute):
   def to_xml_string(self, prefix_root=None):  # pylint: disable=unused-argument
     if self._value is None:
       return None
-    else:
-      out = io.BytesIO()
-      # 17 decimal digits is sufficient to represent a double float without loss
-      # of precision.
-      # https://en.wikipedia.org/wiki/IEEE_754#Character_representation
-      np.savetxt(out, self._value, fmt='%.17g', newline=' ')
-      return util.to_native_string(out.getvalue())[:-1]  # Strip trailing space.
+    out = io.BytesIO()
+    # 17 decimal digits is sufficient to represent a double float without loss
+    # of precision.
+    # https://en.wikipedia.org/wiki/IEEE_754#Character_representation
+    np.savetxt(out, self._value, fmt='%.17g', newline=' ')
+    return util.to_native_string(out.getvalue())[:-1]  # Strip trailing space.
 
   def _check_shape(self, array):
     actual_length = array.shape[0]
     if len(array.shape) > 1:
-      raise ValueError('Expect one-dimensional array: got {}'.format(array))
+      raise ValueError(f'Expect one-dimensional array: got {array}')
     if self._length and actual_length > self._length:
-      raise ValueError('Expect array with no more than {} entries: got {}'
-                       .format(self._length, array))
+      raise ValueError(
+          f'Expect array with no more than {self._length} entries: got {array}')
     return array
 
 
@@ -225,7 +221,7 @@ class Identifier(_Attribute):
 
   def _assign(self, value):
     if not isinstance(value, str):
-      raise ValueError('Expect a string value: got {}'.format(value))
+      raise ValueError(f'Expect a string value: got {value}')
     elif not value:
       self.clear()
     elif self._parent.spec.namespace == 'body' and value == 'world':
@@ -298,8 +294,7 @@ class Reference(_Attribute):
 
   def _assign(self, value):
     if not isinstance(value, (base.Element, str)):
-      raise ValueError(
-          'Expect a string or `mjcf.Element` value: got {}'.format(value))
+      raise ValueError(f'Expect a string or `mjcf.Element` value: got {value}')
     elif not value:
       self.clear()
     else:
@@ -313,9 +308,9 @@ class Reference(_Attribute):
       self._value = value
 
   def _before_clear(self):
-    if isinstance(self._value, base.Element):
-      if isinstance(self._reference_namespace, _Attribute):
-        self._reference_namespace._force_clear()  # pylint: disable=protected-access
+    if isinstance(self._value, base.Element) and isinstance(
+        self._reference_namespace, _Attribute):
+      self._reference_namespace._force_clear()  # pylint: disable=protected-access
 
   def _defaults_string(self, prefix_root):
     """Generates the XML string if this is a reference to a defaults class.
@@ -337,10 +332,8 @@ class Reference(_Attribute):
     prefix = self._parent.namescope.full_prefix(prefix_root)
     if not self._value:
       defaults_root = self._parent.parent
-      while defaults_root is not None:
-        if (hasattr(defaults_root, constants.CHILDCLASS)
-            and defaults_root.childclass):
-          break
+      while defaults_root is not None and not ((hasattr(
+             defaults_root, constants.CHILDCLASS) and defaults_root.childclass)):
         defaults_root = defaults_root.parent
       if defaults_root is None:
         # This element doesn't belong to a childclass'd body.
@@ -376,7 +369,7 @@ class BasePath(_Attribute):
 
   def _assign(self, value):
     if not isinstance(value, str):
-      raise ValueError('Expect a string value: got {}'.format(value))
+      raise ValueError(f'Expect a string value: got {value}')
     elif not value:
       self.clear()
     else:
@@ -481,8 +474,7 @@ class File(_Attribute):
       elif isinstance(value, Asset):
         asset = value
       else:
-        raise ValueError('Expect either a string or `Asset` value: got {}'
-                         .format(value))
+        raise ValueError(f'Expect either a string or `Asset` value: got {value}')
       self._validate_extension(asset.extension)
       self._value = asset
 
@@ -516,9 +508,9 @@ class File(_Attribute):
       return Asset(contents=contents, extension=extension, prefix=filename)
 
   def _validate_extension(self, extension):
-    if self._parent.tag == constants.MESH:
-      if extension.lower() not in _MESH_EXTENSIONS:
-        raise ValueError(_INVALID_MESH_EXTENSION.format(extension))
+    if (self._parent.tag == constants.MESH
+        and extension.lower() not in _MESH_EXTENSIONS):
+      raise ValueError(_INVALID_MESH_EXTENSION.format(extension))
 
   def get_contents(self):
     """Returns a bytestring representing the contents of the asset."""
@@ -530,7 +522,4 @@ class File(_Attribute):
   def to_xml_string(self, prefix_root=None):
     """Returns the asset filename as it will appear in the generated XML."""
     del prefix_root  # Unused
-    if self._value is not None:
-      return self._value.get_vfs_filename()
-    else:
-      return None
+    return self._value.get_vfs_filename() if self._value is not None else None

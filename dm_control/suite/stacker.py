@@ -46,7 +46,7 @@ def make_model(n_boxes):
 
   # Remove unused boxes
   for b in range(n_boxes, 4):
-    box = xml_tools.find_element(mjcf, 'body', 'box' + str(b))
+    box = xml_tools.find_element(mjcf, 'body', f'box{str(b)}')
     box.getparent().remove(box)
 
   return etree.tostring(mjcf, pretty_print=True), common.ASSETS
@@ -128,11 +128,10 @@ class Stack(base.Task):
         automatically (default).
     """
     self._n_boxes = n_boxes
-    self._box_names = ['box' + str(b) for b in range(n_boxes)]
+    self._box_names = [f'box{str(b)}' for b in range(n_boxes)]
     self._box_joint_names = []
     for name in self._box_names:
-      for dim in 'xyz':
-        self._box_joint_names.append('_'.join([name, dim]))
+      self._box_joint_names.extend('_'.join([name, dim]) for dim in 'xyz')
     self._fully_observable = fully_observable
     super().__init__(random=random)
 
@@ -167,9 +166,9 @@ class Stack(base.Task):
 
       # Randomise box locations.
       for name in self._box_names:
-        data.qpos[name + '_x'] = uniform(.1, .3)
-        data.qpos[name + '_z'] = uniform(0, .7)
-        data.qpos[name + '_y'] = uniform(0, 2*np.pi)
+        data.qpos[f'{name}_x'] = uniform(.1, .3)
+        data.qpos[f'{name}_z'] = uniform(0, .7)
+        data.qpos[f'{name}_y'] = uniform(0, 2*np.pi)
 
       # Check for collisions.
       physics.after_reset()

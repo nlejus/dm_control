@@ -112,7 +112,7 @@ class JacoArmTest(parameterized.TestCase):
       # If we failed to accelerate the joint to the target velocity within the
       # time limit we'll reset the simulation and increase the torque.
       torque += torque_increment
-    self.fail('Torque of {} Nm insufficient to backdrive joint.'.format(torque))
+    self.fail(f'Torque of {torque} Nm insufficient to backdrive joint.')
 
   @parameterized.parameters([
       dict(joint_pos=0., expected_obs=[0., 1.]),
@@ -201,9 +201,12 @@ class JacoHandTest(parameterized.TestCase):
     expected_max_grip_force = 30.
     grip_force = bound_touch.sensordata
     self.assertBetween(
-        grip_force, expected_min_grip_force, expected_max_grip_force,
-        msg='Expected grip force to be between {} and {} N, got {} N.'.format(
-            expected_min_grip_force, expected_max_grip_force, grip_force))
+        grip_force,
+        expected_min_grip_force,
+        expected_max_grip_force,
+        msg=
+        f'Expected grip force to be between {expected_min_grip_force} and {expected_max_grip_force} N, got {grip_force} N.',
+    )
 
   @parameterized.parameters([dict(opening=True), dict(opening=False)])
   def test_finger_travel_time(self, opening):

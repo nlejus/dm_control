@@ -66,8 +66,7 @@ def _str2bool(string):
   elif string == 'false':
     return False
   else:
-    raise ValueError(
-        'String should either be `true` or `false`: got {}'.format(string))
+    raise ValueError(f'String should either be `true` or `false`: got {string}')
 
 
 def parse_schema(schema_path):
@@ -114,17 +113,14 @@ def _parse_element(element_xml):
   element_spec = ElementSpec(
       name, repeated, on_demand, identifier, namespace, attributes, children)
 
-  recursive = _str2bool(element_xml.get('recursive'))
-  if recursive:
+  if recursive := _str2bool(element_xml.get('recursive')):
     element_spec.children[name] = element_spec
 
-  common_keys = set(element_spec.attributes).intersection(element_spec.children)
-  if common_keys:
+  if common_keys := set(element_spec.attributes).intersection(
+      element_spec.children):
     raise RuntimeError(
-        'Element \'{}\' contains the following attributes and children with '
-        'the same name: \'{}\'. This violates the design assumptions of '
-        'this library. Please file a bug report. Thank you.'
-        .format(name, sorted(common_keys)))
+        f"Element \'{name}\' contains the following attributes and children with the same name: \'{sorted(common_keys)}\'. This violates the design assumptions of this library. Please file a bug report. Thank you."
+    )
 
   return element_spec
 
@@ -161,7 +157,7 @@ def _parse_attribute(attribute_xml):
     try:
       attribute_callable = _SCALAR_TYPE_MAP[attribute_type]
     except KeyError:
-      raise ValueError('Invalid attribute type: {}'.format(attribute_type))
+      raise ValueError(f'Invalid attribute type: {attribute_type}')
 
   return AttributeSpec(
       name=name, type=attribute_callable, required=required,

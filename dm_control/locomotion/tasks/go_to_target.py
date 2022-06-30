@@ -172,10 +172,7 @@ class GoToTarget(composer.Task):
     return self._failure_termination
 
   def get_discount(self, physics):
-    if self._failure_termination:
-      return 0.
-    else:
-      return 1.
+    return 0. if self._failure_termination else 1.
 
   def get_reward(self, physics):
     reward = 0.

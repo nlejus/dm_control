@@ -237,8 +237,9 @@ class Physics(_control.Physics):
 
     expected_shape = (sum(item.size for item in state_items),)
     if expected_shape != physics_state.shape:
-      raise ValueError('Input physics state has shape {}. Expected {}.'.format(
-          physics_state.shape, expected_shape))
+      raise ValueError(
+          f'Input physics state has shape {physics_state.shape}. Expected {expected_shape}.'
+      )
 
     start = 0
     for state_item in state_items:
@@ -278,12 +279,12 @@ class Physics(_control.Physics):
     """
     if keyframe_id is None:
       mujoco.mj_resetData(self.model.ptr, self.data.ptr)
-    else:
-      if not 0 <= keyframe_id < self.model.nkey:
-        raise ValueError(_KEYFRAME_ID_OUT_OF_RANGE.format(
-            max_valid=self.model.nkey-1, actual=keyframe_id))
+    elif 0 <= keyframe_id < self.model.nkey:
       mujoco.mj_resetDataKeyframe(self.model.ptr, self.data.ptr, keyframe_id)
 
+    else:
+      raise ValueError(_KEYFRAME_ID_OUT_OF_RANGE.format(
+          max_valid=self.model.nkey-1, actual=keyframe_id))
     # Disable actuation since we don't yet have meaningful control inputs.
     with self.model.disable('actuation'):
       self.forward()
@@ -628,26 +629,21 @@ class Camera:
     buffer_width = physics.model.vis.global_.offwidth
     buffer_height = physics.model.vis.global_.offheight
     if width > buffer_width:
-      raise ValueError('Image width {} > framebuffer width {}. Either reduce '
-                       'the image width or specify a larger offscreen '
-                       'framebuffer in the model XML using the clause\n'
-                       '<visual>\n'
-                       '  <global offwidth="my_width"/>\n'
-                       '</visual>'.format(width, buffer_width))
+      raise ValueError(
+          f'Image width {width} > framebuffer width {buffer_width}. Either reduce the image width or specify a larger offscreen framebuffer in the model XML using the clause\n<visual>\n  <global offwidth="my_width"/>\n</visual>'
+      )
     if height > buffer_height:
-      raise ValueError('Image height {} > framebuffer height {}. Either reduce '
-                       'the image height or specify a larger offscreen '
-                       'framebuffer in the model XML using the clause\n'
-                       '<visual>\n'
-                       '  <global offheight="my_height"/>\n'
-                       '</visual>'.format(height, buffer_height))
+      raise ValueError(
+          f'Image height {height} > framebuffer height {buffer_height}. Either reduce the image height or specify a larger offscreen framebuffer in the model XML using the clause\n<visual>\n  <global offheight="my_height"/>\n</visual>'
+      )
     if isinstance(camera_id, str):
       camera_id = physics.model.name2id(camera_id, 'camera')
     if camera_id < -1:
       raise ValueError('camera_id cannot be smaller than -1.')
     if camera_id >= physics.model.ncam:
-      raise ValueError('model has {} fixed cameras. camera_id={} is invalid.'.
-                       format(physics.model.ncam, camera_id))
+      raise ValueError(
+          f'model has {physics.model.ncam} fixed cameras. camera_id={camera_id} is invalid.'
+      )
 
     self._width = width
     self._height = height
@@ -779,9 +775,12 @@ class Camera:
         overlay.draw(self._physics.contexts.mujoco.ptr, self._rect)
 
     # Read the contents of either the RGB or depth buffer.
-    mujoco.mjr_readPixels(self._rgb_buffer if not depth else None,
-                          self._depth_buffer if depth else None, self._rect,
-                          self._physics.contexts.mujoco.ptr)
+    mujoco.mjr_readPixels(
+        None if depth else self._rgb_buffer,
+        self._depth_buffer if depth else None,
+        self._rect,
+        self._physics.contexts.mujoco.ptr,
+    )
 
   def render(
       self,

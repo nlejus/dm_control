@@ -55,8 +55,7 @@ class LoadTest(parameterized.TestCase):
       actual_player_observations = actual_observation[player_id]
       expected_keys = expected_player_observations.keys()
       actual_keys = actual_player_observations.keys()
-      msg = ("Observation keys differ for player {}.\nExpected: {}.\nActual: {}"
-             .format(player_id, expected_keys, actual_keys))
+      msg = f"Observation keys differ for player {player_id}.\nExpected: {expected_keys}.\nActual: {actual_keys}"
       self.assertEqual(expected_keys, actual_keys, msg)
       for key in expected_player_observations:
         expected_array = expected_player_observations[key]

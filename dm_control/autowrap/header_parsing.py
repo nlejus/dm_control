@@ -106,9 +106,9 @@ ENDIF = pp.Keyword("#endif").suppress()
 
 # Variable names, types, literals etc.
 # ------------------------------------------------------------------------------
-NAME = pp.Word(pp.alphanums + "_")
-INT = pp.Word(pp.nums + "UuLl")
-FLOAT = pp.Word(pp.nums + ".+-EeFf")
+NAME = pp.Word(f"{pp.alphanums}_")
+INT = pp.Word(f"{pp.nums}UuLl")
+FLOAT = pp.Word(f"{pp.nums}.+-EeFf")
 NUMBER = FLOAT | INT
 
 # Dimensions can be of the form `[3]`, `[constant_name]` or `[2*constant_name]`
@@ -126,7 +126,7 @@ NATIVE_TYPENAME = pp.MatchFirst([pp.Keyword(n) for n in C_TO_CTYPES.keys()])
 # Macros.
 # ------------------------------------------------------------------------------
 
-HDR_GUARD = DEFINE + "THIRD_PARTY_MUJOCO_HDRS_"
+HDR_GUARD = f"{DEFINE}THIRD_PARTY_MUJOCO_HDRS_"
 
 # e.g. "#define mjUSEDOUBLE"
 DEF_FLAG = pp.Group(

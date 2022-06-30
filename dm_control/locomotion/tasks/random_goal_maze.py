@@ -103,16 +103,13 @@ class NullGoalMaze(composer.Task):
 
       # absolute walker position
       def get_walker_pos(physics):
-        walker_pos = physics.bind(self._walker.root_body).xpos
-        return walker_pos
+        return physics.bind(self._walker.root_body).xpos
       absolute_position = observable_lib.Generic(get_walker_pos)
       absolute_position.enabled = True
 
       # absolute walker orientation
       def get_walker_ori(physics):
-        walker_ori = np.reshape(
-            physics.bind(self._walker.root_body).xmat, (3, 3))
-        return walker_ori
+        return np.reshape(physics.bind(self._walker.root_body).xmat, (3, 3))
       absolute_orientation = observable_lib.Generic(get_walker_ori)
       absolute_orientation.enabled = True
 
@@ -125,8 +122,7 @@ class NullGoalMaze(composer.Task):
             (self._maze_arena.xy_scale)).astype(int)
         x_offset = (self._maze_arena.maze.width - 1) / 2
         y_offset = (self._maze_arena.maze.height - 1) / 2
-        walker_ij = walker_rel_origin + np.array([x_offset, y_offset])
-        return walker_ij
+        return walker_rel_origin + np.array([x_offset, y_offset])
       absolute_position_discrete = observable_lib.Generic(get_walker_ij)
       absolute_position_discrete.enabled = True
 
@@ -330,10 +326,7 @@ class RepeatSingleGoalMaze(NullGoalMaze):
 
   def get_reward(self, physics):
     del physics
-    if self._rewarded_this_step:
-      target_reward = self._target_reward_scale
-    else:
-      target_reward = 0.0
+    target_reward = self._target_reward_scale if self._rewarded_this_step else 0.0
     return target_reward + self._aliveness_reward
 
 
@@ -401,7 +394,7 @@ class ManyHeterogeneousGoalsMaze(NullGoalMaze):
       targets = []
       target_builder = self._target_builders[target_type]
       for i in range(num):
-        target = target_builder(name='target_{}_{}'.format(target_type, i))
+        target = target_builder(name=f'target_{target_type}_{i}')
         targets.append(target)
       all_targets.append(targets)
     return all_targets
@@ -432,15 +425,12 @@ class ManyHeterogeneousGoalsMaze(NullGoalMaze):
     return reward
 
   def should_terminate_episode(self, physics):
-    if super(ManyHeterogeneousGoalsMaze,
-             self).should_terminate_episode(physics):
-      return True
-    else:
+    if not super(ManyHeterogeneousGoalsMaze,
+                 self).should_terminate_episode(physics):
       for target in itertools.chain(*self._active_targets):
         if not target.activated:
           return False
-      # All targets have been activated: successful termination.
-      return True
+    return True
 
 
 class ManyGoalsMaze(ManyHeterogeneousGoalsMaze):
@@ -511,8 +501,10 @@ class RepeatSingleGoalMazeAugmentedWithTargets(RepeatSingleGoalMaze):
     self._subtargets = []
     for i in range(num_subtargets):
       subtarget = target_sphere.TargetSphere(
-          radius=0.4, rgb1=subtarget_colors[0], rgb2=subtarget_colors[1],
-          name='subtarget_{}'.format(i)
+          radius=0.4,
+          rgb1=subtarget_colors[0],
+          rgb2=subtarget_colors[1],
+          name=f'subtarget_{i}',
       )
       self._subtargets.append(subtarget)
       self._maze_arena.attach(subtarget)
@@ -538,12 +530,9 @@ class RepeatSingleGoalMazeAugmentedWithTargets(RepeatSingleGoalMaze):
     return main_reward + subtarget_reward
 
   def should_terminate_episode(self, physics):
-    if super(RepeatSingleGoalMazeAugmentedWithTargets,
-             self).should_terminate_episode(physics):
-      return True
-    else:
+    if not super(RepeatSingleGoalMazeAugmentedWithTargets,
+                 self).should_terminate_episode(physics):
       for subtarget in self._subtargets:
         if not subtarget.activated:
           return False
-      # All subtargets have been activated.
-      return True
+    return True

@@ -72,8 +72,7 @@ class _EnabledObservable:
     self.update_schedule = collections.deque()
 
   def _bind_attribute_from_observable(self, attr, default_value, random_state):
-    obs_attr = getattr(self.observable, attr)
-    if obs_attr:
+    if obs_attr := getattr(self.observable, attr):
       if isinstance(obs_attr, variation.Variation):
         setattr(self, attr,
                 functools.partial(obs_attr, random_state=random_state))
@@ -84,10 +83,7 @@ class _EnabledObservable:
 
 
 def _call_if_callable(arg):
-  if callable(arg):
-    return arg()
-  else:
-    return arg
+  return arg() if callable(arg) else arg
 
 
 def _validate_structure(structure):
@@ -112,8 +108,8 @@ def _validate_structure(structure):
     is_valid = isinstance(structure, dict)
   if not is_valid:
     raise ValueError(
-        '`observables` should be a dict, or a (list or tuple) of dicts'
-        ': got {}'.format(structure))
+        f'`observables` should be a dict, or a (list or tuple) of dicts: got {structure}'
+    )
   return is_nested
 
 

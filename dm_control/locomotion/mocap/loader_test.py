@@ -44,17 +44,15 @@ class HDF5TrajectoryLoaderTest(absltest.TestCase):
         if field.type == descriptor.FieldDescriptor.TYPE_MESSAGE:
           for i, (x_child, y_child) in enumerate(zip(x_field, y_field)):
             self.assert_proto_equal(
-                x_child, y_child,
-                msg=os.path.join(msg, '{}[{}]'.format(field.name, i)))
+                x_child, y_child, msg=os.path.join(msg, f'{field.name}[{i}]'))
         else:
           self.assertEqual(list(x_field), list(y_field),
                            msg=os.path.join(msg, field.name))
+      elif field.type == descriptor.FieldDescriptor.TYPE_MESSAGE:
+        self.assert_proto_equal(
+            x_field, y_field, msg=os.path.join(msg, field.name))
       else:
-        if field.type == descriptor.FieldDescriptor.TYPE_MESSAGE:
-          self.assert_proto_equal(
-              x_field, y_field, msg=os.path.join(msg, field.name))
-        else:
-          self.assertEqual(x_field, y_field, msg=os.path.join(msg, field.name))
+        self.assertEqual(x_field, y_field, msg=os.path.join(msg, field.name))
 
   def test_hdf5_agrees_with_textprotos(self):
 

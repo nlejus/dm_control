@@ -25,6 +25,7 @@ http://mocap.cs.cmu.edu/, and may be copied, modified, or redistributed without
 explicit permission (see http://mocap.cs.cmu.edu/faqs.php).
 """
 
+
 import hashlib
 import os
 
@@ -38,8 +39,10 @@ H5_PATHS = {k: (os.path.join(os.path.dirname(__file__), v),
                 os.path.join('~/.dm_control', v))
             for k, v in H5_FILENAME.items()}
 H5_URL_BASE = 'https://storage.googleapis.com/dm_control/'
-H5_URL = {'2019': H5_URL_BASE+'cmu_2019_08756c01.h5',
-          '2020': H5_URL_BASE+'cmu_2020_dfe3e9e0.h5'}
+H5_URL = {
+    '2019': f'{H5_URL_BASE}cmu_2019_08756c01.h5',
+    '2020': f'{H5_URL_BASE}cmu_2020_dfe3e9e0.h5',
+}
 
 H5_BYTES = {'2019': 488143314,
             '2020': 476559420}

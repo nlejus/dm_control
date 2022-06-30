@@ -68,7 +68,7 @@ def _make_walker(name, walker_id, marker_rgba, walker_type=WalkerType.BOXHEAD):
         walker_id=walker_id,
         visual=Humanoid.Visual.JERSEY,
         initializer=initializer)
-  raise ValueError("Unrecognized walker type: %s" % walker_type)
+  raise ValueError(f"Unrecognized walker type: {walker_type}")
 
 
 def _make_players(team_size, walker_type):

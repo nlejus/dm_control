@@ -39,10 +39,7 @@ FLAGS = flags.FLAGS
 def _get_timeout():
   global _TIMEOUT
   if _TIMEOUT is None:
-    if FLAGS.is_parsed():
-      _TIMEOUT = FLAGS.timeout
-    else:
-      _TIMEOUT = FLAGS['timeout'].default
+    _TIMEOUT = FLAGS.timeout if FLAGS.is_parsed() else FLAGS['timeout'].default
   return _TIMEOUT
 
 

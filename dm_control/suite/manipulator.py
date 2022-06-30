@@ -239,7 +239,7 @@ class Bring(base.Task):
         object_x = uniform(-.5, .5)
         object_z = uniform(0, .7)
         object_angle = uniform(0, 2*np.pi)
-        data.qvel[self._object + '_x'] = uniform(-5, 5)
+        data.qvel[f'{self._object}_x'] = uniform(-5, 5)
 
       data.qpos[self._object_joints] = object_x, object_z, object_angle
 

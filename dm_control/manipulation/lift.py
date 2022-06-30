@@ -73,8 +73,14 @@ class _VertexSitesMixin:
     self._vertices = []
     for i, pos in enumerate(site_positions):
       site = box_geom_or_site.parent.add(
-          'site', name='vertex_' + str(i), pos=pos, type='sphere', size=[0.002],
-          rgba=constants.RED, group=constants.TASK_SITE_GROUP)
+          'site',
+          name=f'vertex_{str(i)}',
+          pos=pos,
+          type='sphere',
+          size=[0.002],
+          rgba=constants.RED,
+          group=constants.TASK_SITE_GROUP,
+      )
       self._vertices.append(site)
 
   @property
@@ -224,10 +230,15 @@ def _lift(obs_settings, prop_name):
     prop.geom.mass = _BOX_MASS
   else:
     raise ValueError('`prop_name` must be either \'duplo\' or \'box\'.')
-  task = Lift(arena=arena, arm=arm, hand=hand, prop=prop, workspace=workspace,
-              obs_settings=obs_settings,
-              control_timestep=constants.CONTROL_TIMESTEP)
-  return task
+  return Lift(
+      arena=arena,
+      arm=arm,
+      hand=hand,
+      prop=prop,
+      workspace=workspace,
+      obs_settings=obs_settings,
+      control_timestep=constants.CONTROL_TIMESTEP,
+  )
 
 
 @registry.add(tags.FEATURES)

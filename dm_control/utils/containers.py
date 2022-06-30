@@ -112,4 +112,4 @@ class TaggedTasks(collections.abc.Mapping):
     return len(self._tasks)
 
   def __repr__(self):
-    return "{}({})".format(self.__class__.__name__, str(self._tasks))
+    return f"{self.__class__.__name__}({str(self._tasks)})"

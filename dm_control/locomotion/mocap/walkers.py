@@ -59,8 +59,7 @@ class WalkerInfo:
       current_mass = physics.bind(walker.root_body).subtreemass
       mass_factor = self._proto.mass / current_mass
       for body in walker.root_body.find_all('body'):
-        inertial = getattr(body, 'inertial', None)
-        if inertial:
+        if inertial := getattr(body, 'inertial', None):
           inertial.mass *= mass_factor
       for geom in walker.root_body.find_all('geom'):
         if geom.mass is not None:

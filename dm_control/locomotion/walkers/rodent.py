@@ -168,7 +168,7 @@ class Rat(legacy_base.Walker):
 
   @composer.cached_property
   def mocap_joint_order(self):
-    return tuple([jnt.name for jnt in self.mocap_joints])  #  This lint is mistaken; pylint: disable=not-an-iterable
+    return tuple(jnt.name for jnt in self.mocap_joints)
 
   @composer.cached_property
   def bodies(self):
@@ -196,20 +196,14 @@ class Rat(legacy_base.Walker):
   @composer.cached_property
   def primary_joint_order(self):
     joint_names = self.mocap_joint_order
-    primary_names = tuple([jnt.name for jnt in self.primary_joints])  # pylint: disable=not-an-iterable
-    primary_order = []
-    for nm in primary_names:
-      primary_order.append(joint_names.index(nm))
-    return primary_order
+    primary_names = tuple(jnt.name for jnt in self.primary_joints)
+    return [joint_names.index(nm) for nm in primary_names]
 
   @composer.cached_property
   def vertebra_joint_order(self):
     joint_names = self.mocap_joint_order
-    vertebra_names = tuple([jnt.name for jnt in self.vertebra_joints])  # pylint: disable=not-an-iterable
-    vertebra_order = []
-    for nm in vertebra_names:
-      vertebra_order.append(joint_names.index(nm))
-    return vertebra_order
+    vertebra_names = tuple(jnt.name for jnt in self.vertebra_joints)
+    return [joint_names.index(nm) for nm in vertebra_names]
 
   @composer.cached_property
   def egocentric_camera(self):
@@ -224,8 +218,8 @@ class Rat(legacy_base.Walker):
   @composer.cached_property
   def joint_actuators(self):
     """Return all joint actuators."""
-    return tuple([act for act in self._mjcf_root.find_all('actuator')
-                  if act.joint])
+    return tuple(
+        act for act in self._mjcf_root.find_all('actuator') if act.joint)
 
   @composer.cached_property
   def joint_actuators_range(self):
@@ -249,11 +243,8 @@ class Rat(legacy_base.Walker):
   @composer.cached_property
   def joint_actuator_order(self):
     joint_names = self.mocap_joint_order
-    joint_actuator_names = tuple([act.name for act in self.joint_actuators])  #  This lint is mistaken; pylint: disable=not-an-iterable
-    actuator_order = []
-    for nm in joint_actuator_names:
-      actuator_order.append(joint_names.index(nm))
-    return actuator_order
+    joint_actuator_names = tuple(act.name for act in self.joint_actuators)
+    return [joint_names.index(nm) for nm in joint_actuator_names]
 
   def _build_observables(self):
     return RodentObservables(self)

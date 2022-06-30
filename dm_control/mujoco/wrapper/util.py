@@ -29,17 +29,12 @@ DEFAULT_ENCODING = sys.getdefaultencoding()
 
 def to_binary_string(s):
   """Convert text string to binary."""
-  if isinstance(s, bytes):
-    return s
-  return s.encode(DEFAULT_ENCODING)
+  return s if isinstance(s, bytes) else s.encode(DEFAULT_ENCODING)
 
 
 def to_native_string(s):
   """Convert a text or binary string to the native string format."""
-  if isinstance(s, bytes):
-    return s.decode(DEFAULT_ENCODING)
-  else:
-    return s
+  return s.decode(DEFAULT_ENCODING) if isinstance(s, bytes) else s
 
 
 def get_mjlib():
@@ -52,9 +47,6 @@ def ndptr(*args, **kwargs):
   base = np.ctypeslib.ndpointer(*args, **kwargs)
 
   def from_param(_, obj):
-    if obj is None:
-      return obj
-    else:
-      return base.from_param(obj)
+    return obj if obj is None else base.from_param(obj)
 
   return type(base.__name__, (base,), {"from_param": classmethod(from_param)})

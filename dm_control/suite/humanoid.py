@@ -170,14 +170,13 @@ class Humanoid(base.Task):
     obs = collections.OrderedDict()
     if self._pure_state:
       obs['position'] = physics.position()
-      obs['velocity'] = physics.velocity()
     else:
       obs['joint_angles'] = physics.joint_angles()
       obs['head_height'] = physics.head_height()
       obs['extremities'] = physics.extremities()
       obs['torso_vertical'] = physics.torso_vertical_orientation()
       obs['com_velocity'] = physics.center_of_mass_velocity()
-      obs['velocity'] = physics.velocity()
+    obs['velocity'] = physics.velocity()
     return obs
 
   def get_reward(self, physics):

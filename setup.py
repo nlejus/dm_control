@@ -98,10 +98,10 @@ class BuildMJBindingsCommand(cmd.Command):
     command = [
         sys.executable or 'python',
         AUTOWRAP_PATH,
-        '--header_paths={}'.format(self.header_paths),
-        '--output_dir={}'.format(output_dir)
+        f'--header_paths={self.header_paths}',
+        f'--output_dir={output_dir}',
     ]
-    self.announce('Running command: {}'.format(command), level=log.DEBUG)
+    self.announce(f'Running command: {command}', level=log.DEBUG)
     try:
       # Prepend the current directory to $PYTHONPATH so that internal imports
       # in `autowrap` can succeed before we've installed anything.
@@ -154,10 +154,7 @@ def find_data_files(package_dir, patterns, excludes=()):
   paths = set()
 
   def is_excluded(s):
-    for exclude in excludes:
-      if fnmatch.fnmatch(s, exclude):
-        return True
-    return False
+    return any(fnmatch.fnmatch(s, exclude) for exclude in excludes)
 
   for directory, _, filenames in os.walk(package_dir):
     if is_excluded(directory):

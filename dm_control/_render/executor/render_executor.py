@@ -122,10 +122,7 @@ class PassthroughRenderExecutor(BaseRenderExecutor):
 
   @property
   def thread(self):
-    if not self._terminated:
-      return threading.current_thread()
-    else:
-      return None
+    return None if self._terminated else threading.current_thread()
 
   @property
   def _lock_if_necessary(self):
@@ -180,14 +177,7 @@ class OffloadingRenderExecutor(BaseRenderExecutor):
 
   @property
   def _lock_if_necessary(self):
-    if threading.current_thread() is self.thread:
-      # If the offload thread needs to make a call to its own executor, for
-      # example when a weakref callback is triggered during an offloaded call,
-      # then we must not try to reacquire our own lock.
-      # Otherwise, a deadlock ensues.
-      return _FAKE_LOCK
-    else:
-      return self._mutex
+    return _FAKE_LOCK if threading.current_thread() is self.thread else self._mutex
 
   def call(self, func, *args, **kwargs):
     self._check_locked()

@@ -183,11 +183,15 @@ def _reach(obs_settings, use_site):
     workspace = _DUPLO_WORKSPACE
     prop = props.Duplo(observable_options=observations.make_options(
         obs_settings, observations.FREEPROP_OBSERVABLES))
-  task = Reach(arena=arena, arm=arm, hand=hand, prop=prop,
-               obs_settings=obs_settings,
-               workspace=workspace,
-               control_timestep=constants.CONTROL_TIMESTEP)
-  return task
+  return Reach(
+      arena=arena,
+      arm=arm,
+      hand=hand,
+      prop=prop,
+      obs_settings=obs_settings,
+      workspace=workspace,
+      control_timestep=constants.CONTROL_TIMESTEP,
+  )
 
 
 @registry.add(tags.FEATURES, tags.EASY)

@@ -15,8 +15,9 @@
 """Datasets for reference pose tasks.
 """
 
+
 from dm_control.locomotion.tasks.reference_pose import cmu_subsets
 
 
-DATASETS = dict()
-DATASETS.update(cmu_subsets.CMU_SUBSETS_DICT)
+DATASETS = {}
+DATASETS |= cmu_subsets.CMU_SUBSETS_DICT

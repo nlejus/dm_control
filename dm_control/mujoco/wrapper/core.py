@@ -117,7 +117,7 @@ def set_callback(name, new_callback=None):
       * An integer specifying the address of a callback function
       * None, in which case any existing callback of that name is removed
   """
-  getattr(mujoco, "set_" + name)(new_callback)
+  getattr(mujoco, f"set_{name}")(new_callback)
 
 
 @contextlib.contextmanager
@@ -139,7 +139,7 @@ def callback_context(name, new_callback=None):
   Yields:
     None
   """
-  old_callback = getattr(mujoco, "get_" + name)()
+  old_callback = getattr(mujoco, f"get_{name}")()
   set_callback(name, new_callback)
   try:
     yield
@@ -246,14 +246,13 @@ class _MjModelMeta(type):
 
   def __new__(cls, name, bases, dct):
     for attr in dir(mujoco.MjModel):
-      if not attr.startswith("_"):
-        if attr not in dct:
-          # pylint: disable=protected-access
-          fget = lambda self, attr=attr: getattr(self._model, attr)
-          fset = (
-              lambda self, value, attr=attr: setattr(self._model, attr, value))
-          # pylint: enable=protected-access
-          dct[attr] = property(fget, fset)
+      if not attr.startswith("_") and attr not in dct:
+        # pylint: disable=protected-access
+        fget = lambda self, attr=attr: getattr(self._model, attr)
+        fset = (
+            lambda self, value, attr=attr: setattr(self._model, attr, value))
+        # pylint: enable=protected-access
+        dct[attr] = property(fget, fset)
     return super().__new__(cls, name, bases, dct)
 
 
@@ -407,15 +406,16 @@ class MjModel(metaclass=_MjModelMeta):
     for flag in flags:
       if isinstance(flag, str):
         try:
-          field_name = "mjDSBL_" + flag.upper()
+          field_name = f"mjDSBL_{flag.upper()}"
           flag = getattr(mujoco.mjtDisableBit, field_name)
         except AttributeError:
           valid_names = [
               field_name.split("_")[1].lower()
               for field_name in list(mujoco.mjtDisableBit.__members__)[:-1]
           ]
-          raise ValueError("'{}' is not a valid flag name. Valid names: {}"
-                           .format(flag, ", ".join(valid_names))) from None
+          raise ValueError(
+              f"""'{flag}' is not a valid flag name. Valid names: {", ".join(valid_names)}"""
+          ) from None
       elif isinstance(flag, int):
         flag = mujoco.mjtDisableBit(flag)
       new_bitmask |= flag.value
@@ -437,13 +437,12 @@ class _MjDataMeta(type):
 
   def __new__(cls, name, bases, dct):
     for attr in dir(mujoco.MjData):
-      if not attr.startswith("_"):
-        if attr not in dct:
-          # pylint: disable=protected-access
-          fget = lambda self, attr=attr: getattr(self._data, attr)
-          fset = lambda self, value, attr=attr: setattr(self._data, attr, value)
-          # pylint: enable=protected-access
-          dct[attr] = property(fget, fset)
+      if not attr.startswith("_") and attr not in dct:
+        # pylint: disable=protected-access
+        fget = lambda self, attr=attr: getattr(self._data, attr)
+        fset = lambda self, value, attr=attr: setattr(self._data, attr, value)
+        # pylint: enable=protected-access
+        dct[attr] = property(fget, fset)
     return super().__new__(cls, name, bases, dct)
 
 
@@ -621,8 +620,7 @@ class MjrContext:
     been called.
     """
     if self._gl_context and not self._gl_context.terminated:
-      ptr = self.ptr
-      if ptr:
+      if ptr := self.ptr:
         self._gl_context.dont_keep_alive(ptr)
         with self._gl_context.make_current() as ctx:
           ctx.call(ptr.free)
@@ -680,10 +678,7 @@ class MjvScene(mujoco.MjvScene):  # pylint: disable=missing-docstring
       super().__init__()
     else:
       if max_geom is None:
-        if model is None:
-          max_renderable_geoms = 0
-        else:
-          max_renderable_geoms = _estimate_max_renderable_geoms(model)
+        max_renderable_geoms = _estimate_max_renderable_geoms(model)
         max_geom = max(1000, max_renderable_geoms)
 
       super().__init__(model.ptr, max_geom)

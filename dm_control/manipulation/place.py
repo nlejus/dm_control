@@ -263,12 +263,16 @@ def _place(obs_settings, cradle_prop_name):
     raise ValueError(
         '`cradle_prop_name` must be either \'duplo\' or \'cradle\'.')
 
-  task = Place(arena=arena, arm=arm, hand=hand, prop=prop,
-               obs_settings=obs_settings,
-               workspace=_WORKSPACE,
-               control_timestep=constants.CONTROL_TIMESTEP,
-               cradle=cradle)
-  return task
+  return Place(
+      arena=arena,
+      arm=arm,
+      hand=hand,
+      prop=prop,
+      obs_settings=obs_settings,
+      workspace=_WORKSPACE,
+      control_timestep=constants.CONTROL_TIMESTEP,
+      cradle=cradle,
+  )
 
 
 @registry.add(tags.FEATURES)

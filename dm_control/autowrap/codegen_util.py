@@ -70,7 +70,7 @@ class UniqueOrderedDict(collections.OrderedDict):
 
   def __setitem__(self, k, v):
     if k in self:
-      raise ValueError("Key '{}' already exists.".format(k))
+      raise ValueError(f"Key '{k}' already exists.")
     super().__setitem__(k, v)
 
 

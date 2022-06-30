@@ -20,6 +20,7 @@ If Mujoco raises a compile error on the generated XML model, we would then be
 able to find the original source line that created the offending element.
 """
 
+
 import collections
 import contextlib
 import copy
@@ -51,9 +52,9 @@ ElementDebugInfo = collections.namedtuple(
 MODULE_PATH = os.path.dirname(sys.modules[__name__].__file__)
 DEBUG_METADATA_PREFIX = 'pymjcfdebug'
 
-_DEBUG_METADATA_TAG_PREFIX = '<!--' + DEBUG_METADATA_PREFIX
+_DEBUG_METADATA_TAG_PREFIX = f'<!--{DEBUG_METADATA_PREFIX}'
 _DEBUG_METADATA_SEARCH_PATTERN = re.compile(
-    r'<!--{}:(\d+)-->'.format(DEBUG_METADATA_PREFIX))
+    f'<!--{DEBUG_METADATA_PREFIX}:(\d+)-->')
 
 # Modified by `freeze_current_stack_trace`.
 _CURRENT_FROZEN_STACK = None
@@ -193,12 +194,11 @@ class DebugContext:
     """
     if not debug_mode():
       return None
-    else:
-      self._debug_info_for_element_ids[id(elem)] = ElementDebugInfo(
-          elem,
-          copy.deepcopy(elem.get_init_stack()),
-          copy.deepcopy(elem.get_last_modified_stacks_for_all_attributes()))
-      return etree.Comment('{}:{}'.format(DEBUG_METADATA_PREFIX, id(elem)))
+    self._debug_info_for_element_ids[id(elem)] = ElementDebugInfo(
+        elem,
+        copy.deepcopy(elem.get_init_stack()),
+        copy.deepcopy(elem.get_last_modified_stacks_for_all_attributes()))
+    return etree.Comment(f'{DEBUG_METADATA_PREFIX}:{id(elem)}')
 
   def commit_xml_string(self, xml_string):
     """Commits the XML string associated with this debug context.
@@ -228,13 +228,13 @@ class DebugContext:
     appropriate flag.
     """
     err_type, err, tb = sys.exc_info()
-    line_number_match = re.search(r'[Ll][Ii][Nn][Ee]\s*[:=]?\s*(\d+)', str(err))
-    if line_number_match:
-      xml_line_number = int(line_number_match.group(1))
+    if line_number_match := re.search(r'[Ll][Ii][Nn][Ee]\s*[:=]?\s*(\d+)',
+                                      str(err)):
+      xml_line_number = int(line_number_match[1])
       xml_line = self._xml_string.split('\n')[xml_line_number - 1]
       stripped_xml_line = xml_line.strip()
-      comment_match = re.search(_DEBUG_METADATA_TAG_PREFIX, stripped_xml_line)
-      if comment_match:
+      if comment_match := re.search(_DEBUG_METADATA_TAG_PREFIX,
+                                    stripped_xml_line):
         stripped_xml_line = stripped_xml_line[:comment_match.start()]
     else:
       xml_line = ''
@@ -294,9 +294,10 @@ class DebugContext:
       indent = '    '
       f.write(header + '\n')
       for stack_entry in stack:
-        f.write(indent + '`{}` at {}:{}\n'
-                .format(stack_entry.function_name,
-                        stack_entry.filename, stack_entry.line_number))
+        f.write((
+            indent +
+            f'`{stack_entry.function_name}` at {stack_entry.filename}:{stack_entry.line_number}\n'
+        ))
         f.write((indent * 2) + str(stack_entry.text) + '\n')
       f.write(section_separator)
     with open(os.path.join(dump_dir, 'model.xml'), 'w') as f:
@@ -324,8 +325,7 @@ class DebugContext:
 
   def _generate_debug_message_from_xml_line(self, xml_line):
     """Generates a debug message by parsing the metadata on an XML line."""
-    metadata_match = _DEBUG_METADATA_SEARCH_PATTERN.search(xml_line)
-    if metadata_match:
+    if metadata_match := _DEBUG_METADATA_SEARCH_PATTERN.search(xml_line):
       elem_id = int(metadata_match.group(1))
       return self._generate_debug_message_from_element_id(elem_id)
     else:
@@ -333,34 +333,31 @@ class DebugContext:
 
   def _generate_debug_message_from_element_id(self, elem_id):
     """Generates a debug message for the specified Element."""
-    out = []
     debug_info = self._debug_info_for_element_ids[elem_id]
 
-    out.append('Debug summary for element:')
+    out = ['Debug summary for element:']
     if not get_full_dump_dir():
       out.append(
           '  * Full debug info can be dumped to disk by setting the '
           'flag --pymjcf_debug_full_dump_dir=path/to/dump>')
-    out.append('  * Element object was created by `{}` at {}:{}'
-               .format(debug_info.init_stack[-1].function_name,
-                       debug_info.init_stack[-1].filename,
-                       debug_info.init_stack[-1].line_number))
+    out.append(
+        f'  * Element object was created by `{debug_info.init_stack[-1].function_name}` at {debug_info.init_stack[-1].filename}:{debug_info.init_stack[-1].line_number}'
+    )
 
     for attrib_name, stack in debug_info.attribute_stacks.items():
       attrib_value = debug_info.element.get_attribute_xml_string(attrib_name)
       if stack[-1] == debug_info.init_stack[-1]:
         if attrib_value is not None:
-          out.append('  * {}="{}" was set when the element was created'
-                     .format(attrib_name, attrib_value))
-      else:
-        if attrib_value is not None:
-          out.append('  * {}="{}" was set by `{}` at `{}:{}`'
-                     .format(attrib_name, attrib_value,
-                             stack[-1].function_name, stack[-1].filename,
-                             stack[-1].line_number))
-        else:
-          out.append('  * {} was CLEARED by `{}` at {}:{}'
-                     .format(attrib_name, stack[-1].function_name,
-                             stack[-1].filename, stack[-1].line_number))
+          out.append(
+              f'  * {attrib_name}="{attrib_value}" was set when the element was created'
+          )
+      elif attrib_value is None:
+        out.append(
+            f'  * {attrib_name} was CLEARED by `{stack[-1].function_name}` at {stack[-1].filename}:{stack[-1].line_number}'
+        )
 
+      else:
+        out.append(
+            f'  * {attrib_name}="{attrib_value}" was set by `{stack[-1].function_name}` at `{stack[-1].filename}:{stack[-1].line_number}`'
+        )
     return '\n'.join(out)

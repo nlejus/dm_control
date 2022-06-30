@@ -84,7 +84,7 @@ class ExportWithAssetsTest(parameterized.TestCase):
     out_dir = self.create_tempdir().full_path
     mjcf_model = mjcf.from_path(_TEST_MODEL_WITH_ASSETS)
     mjcf.export_with_assets(mjcf_model, out_dir, out_file_name=None)
-    expected_name = mjcf_model.model + '.xml'
+    expected_name = f'{mjcf_model.model}.xml'
     self.assertTrue(os.path.isfile(os.path.join(out_dir, expected_name)))
 
   def test_exceptions(self):

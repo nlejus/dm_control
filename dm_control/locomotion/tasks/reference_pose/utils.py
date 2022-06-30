@@ -25,9 +25,7 @@ def add_walker(walker_fn, arena, name='walker', ghost=False, visible=True,
   walker = walker_fn(name=name)
 
   if ghost:
-    # if the walker has a built-in tracking light remove it.
-    light = walker.mjcf_model.find('light', 'tracking_light')
-    if light:
+    if light := walker.mjcf_model.find('light', 'tracking_light'):
       light.remove()
 
     # Remove the contacts.
@@ -54,8 +52,7 @@ def add_walker(walker_fn, arena, name='walker', ghost=False, visible=True,
     for elem in elems:
       elem.remove()
 
-    skin = walker.mjcf_model.find('skin', 'skin')
-    if skin:
+    if skin := walker.mjcf_model.find('skin', 'skin'):
       if visible:
         skin.set_attributes(rgba=(0.5, 0.5, 0.5, 0.999))
       else:
@@ -129,9 +126,8 @@ def get_features(physics, walker, props=None):
   """Get walker features for reward functions."""
   walker_bodies = walker.mocap_tracking_bodies
 
-  walker_features = {}
   root_pos, root_quat = walker.get_pose(physics)
-  walker_features['position'] = np.array(root_pos)
+  walker_features = {'position': np.array(root_pos)}
   walker_features['quaternion'] = np.array(root_quat)
   joints = np.array(physics.bind(walker.mocap_joints).qpos)
   walker_features['joints'] = joints

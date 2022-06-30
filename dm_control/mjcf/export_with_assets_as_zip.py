@@ -39,8 +39,8 @@ def export_with_assets_as_zip(mjcf_model, out_dir, model_name=None):
   if model_name is None:
     model_name = mjcf_model.model
 
-  xml_name = model_name + '.xml'
-  zip_name = model_name + '.zip'
+  xml_name = f'{model_name}.xml'
+  zip_name = f'{model_name}.zip'
 
   files_to_zip = mjcf_model.get_assets()
   files_to_zip[xml_name] = mjcf_model.to_xml_string()

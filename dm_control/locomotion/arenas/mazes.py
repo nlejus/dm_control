@@ -248,9 +248,14 @@ class MazeWithTargets(composer.Arena):
       wall_size = np.array([(wall.end.x - wall_mid.x - 0.5) * self._xy_scale,
                             (wall.end.y - wall_mid.y - 0.5) * self._xy_scale,
                             self._z_height / 2])
-      self._maze_body.add('geom', name='wall{}_{}'.format(wall_char, i),
-                          type='box', pos=wall_pos, size=wall_size,
-                          group=_WALL_GEOM_GROUP)
+      self._maze_body.add(
+          'geom',
+          name=f'wall{wall_char}_{i}',
+          type='box',
+          pos=wall_pos,
+          size=wall_size,
+          group=_WALL_GEOM_GROUP,
+      )
       self._make_wall_texturing_planes(wall_char, i, wall_pos, wall_size)
 
   def _make_wall_texturing_planes(self, wall_char, wall_id,
@@ -261,9 +266,9 @@ class MazeWithTargets(composer.Arena):
         'z': {-1: [-1, 0, 0, 0, 1, 0], 1: [1, 0, 0, 0, 1, 0]}
     }
     for direction_index, direction in enumerate(('x', 'y', 'z')):
-      index = list(i for i in range(3) if i != direction_index)
+      index = [i for i in range(3) if i != direction_index]
       delta_vector = np.array([int(i == direction_index) for i in range(3)])
-      material_name = 'wall{}_{}_{}'.format(wall_char, wall_id, direction)
+      material_name = f'wall{wall_char}_{wall_id}_{direction}'
       self._texturing_material_names.append(material_name)
       mat = self._mjcf_root.asset.add(
           'material', name=material_name,
@@ -272,9 +277,7 @@ class MazeWithTargets(composer.Arena):
       for sign, sign_name in zip((-1, 1), ('neg', 'pos')):
         if direction == 'z' and sign == -1:
           continue
-        geom_name = (
-            'wall{}_{}_texturing_{}_{}'.format(
-                wall_char, wall_id, sign_name, direction))
+        geom_name = f'wall{wall_char}_{wall_id}_texturing_{sign_name}_{direction}'
         self._texturing_geom_names.append(geom_name)
         self._mjcf_root.worldbody.add(
             'geom', type='plane', name=geom_name,
@@ -310,9 +313,8 @@ class MazeWithTargets(composer.Arena):
       if variation != _DEFAULT_FLOOR_CHAR:
         if len(self._floor_textures) == 1:
           return
-        else:
-          while variation_texture is main_floor_texture:
-            variation_texture = np.random.choice(self._floor_textures)
+        while variation_texture is variation_texture:
+          variation_texture = np.random.choice(self._floor_textures)
 
       for i, tile in enumerate(tiles):
         tile_mid = covering.GridCoordinates(
@@ -325,9 +327,9 @@ class MazeWithTargets(composer.Arena):
                               (tile.end.y - tile_mid.y - 0.5) * self._xy_scale,
                               self._xy_scale])
         if variation == _DEFAULT_FLOOR_CHAR:
-          tile_name = 'floor_{}'.format(i)
+          tile_name = f'floor_{i}'
         else:
-          tile_name = 'floor_{}_{}'.format(variation, i)
+          tile_name = f'floor_{variation}_{i}'
         self._tile_geom_names[tile.start] = tile_name
         self._texturing_material_names.append(tile_name)
         self._texturing_geom_names.append(tile_name)
@@ -340,10 +342,9 @@ class MazeWithTargets(composer.Arena):
 
   @property
   def ground_geoms(self):
-    return tuple([
+    return tuple(
         geom for geom in self.mjcf_model.find_all('geom')
-        if 'ground' in geom.name
-    ])
+        if 'ground' in geom.name)
 
   def find_token_grid_positions(self, tokens):
     out = {token: [] for token in tokens}
@@ -355,21 +356,21 @@ class MazeWithTargets(composer.Arena):
     return out
 
   def grid_to_world_positions(self, grid_positions):
-    out = []
-    for y, x in grid_positions:
-      out.append(np.array([(x - self._x_offset) * self._xy_scale,
-                           -(y - self._y_offset) * self._xy_scale,
-                           0.0]))
-    return out
+    return [
+        np.array([
+            (x - self._x_offset) * self._xy_scale,
+            -(y - self._y_offset) * self._xy_scale,
+            0.0,
+        ]) for y, x in grid_positions
+    ]
 
   def world_to_grid_positions(self, world_positions):
-    out = []
-    # the order of x, y is reverse between grid positions format and
-    # world positions format.
-    for x, y, _ in world_positions:
-      out.append(np.array([self._y_offset - y / self._xy_scale,
-                           self._x_offset + x / self._xy_scale]))
-    return out
+    return [
+        np.array([
+            self._y_offset - y / self._xy_scale,
+            self._x_offset + x / self._xy_scale,
+        ]) for x, y, _ in world_positions
+    ]
 
   def _find_spawn_and_target_positions(self):
     grid_positions = self.find_token_grid_positions([

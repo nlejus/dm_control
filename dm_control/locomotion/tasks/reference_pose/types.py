@@ -51,5 +51,5 @@ class ClipCollection:
         assert len(self.weights) == num_clips
         assert np.all(np.array(self.weights) >= 0.)
     except AssertionError as e:
-      raise ValueError("ClipCollection validation failed. {}".format(e))
+      raise ValueError(f"ClipCollection validation failed. {e}")
 

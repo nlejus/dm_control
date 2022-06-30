@@ -77,11 +77,12 @@ class _MazeWallCoveringContext:
 
   def _scan_row(self, row, start_col, end_col):
     """Scans a row of text maze to find the longest strip of wall."""
-    for col in range(start_col, end_col):
-      if (self._text_maze[row, col] != self._wall_char
-          or self._covered[row, col]):
-        return col
-    return end_col
+    return next(
+        (col for col in range(start_col, end_col)
+         if (self._text_maze[row, col] != self._wall_char
+             or self._covered[row, col])),
+        end_col,
+    )
 
   def _find_next_wall(self):
     """Finds the largest piece of rectangular wall at the current location.
@@ -99,19 +100,17 @@ class _MazeWallCoveringContext:
 
     for y in range(start.y, self._maze_size.y):
       x = self._scan_row(y, start.x, x)
-      if x > start.x:
-        if self._make_odd_sized_walls and (x - start.x) % 2 == 0:
-          x -= 1
-        end_x_for_rows.append(x)
-        total_cells.append((x - start.x) * (y - start.y + 1))
-        y += 1
-      else:
+      if x <= start.x:
         break
 
-    if not self._make_odd_sized_walls:
-      end_y_offset = total_cells.index(max(total_cells))
-    else:
-      end_y_offset = 2 * total_cells[::2].index(max(total_cells[::2]))
+      if self._make_odd_sized_walls and (x - start.x) % 2 == 0:
+        x -= 1
+      end_x_for_rows.append(x)
+      total_cells.append((x - start.x) * (y - start.y + 1))
+      y += 1
+    end_y_offset = (2 * total_cells[::2].index(max(total_cells[::2]))
+                    if self._make_odd_sized_walls else total_cells.index(
+                        max(total_cells)))
     end = GridCoordinates(start.y + end_y_offset + 1,
                           end_x_for_rows[end_y_offset])
     self._covered[start.y:end.y, start.x:end.x] = True

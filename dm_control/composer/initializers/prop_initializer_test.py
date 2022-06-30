@@ -51,8 +51,7 @@ def _make_spheres(num_spheres, radius, nconmax):
   arena.mjcf_model.worldbody.add('geom', type='plane', size=[1, 1, 0.1],
                                  pos=[0., 0., -2 * radius], name='ground')
   for i in range(num_spheres):
-    sphere = props.Primitive(
-        geom_type='sphere', size=[radius], name='sphere_{}'.format(i))
+    sphere = props.Primitive(geom_type='sphere', size=[radius], name=f'sphere_{i}')
     arena.add_free_entity(sphere)
     spheres.append(sphere)
   arena.mjcf_model.size.nconmax = nconmax
@@ -70,19 +69,19 @@ class PropPlacerTest(parameterized.TestCase):
       all_colliding_geoms.add(contact.geom2)
     for entity in entities:
       entity_geoms = physics.bind(entity.mjcf_model.find_all('geom')).element_id
-      colliding_entity_geoms = all_colliding_geoms.intersection(entity_geoms)
-      if colliding_entity_geoms:
+      if colliding_entity_geoms := all_colliding_geoms.intersection(
+          entity_geoms):
         names = ', '.join(
             physics.model.id2name(i, 'geom') for i in colliding_entity_geoms)
-        self.fail('Entity {} has colliding geoms: {}'
-                  .format(entity.mjcf_model.model, names))
+        self.fail(f'Entity {entity.mjcf_model.model} has colliding geoms: {names}')
 
   def assertPositionsWithinBounds(self, physics, entities, lower, upper):
     for entity in entities:
       position, _ = entity.get_pose(physics)
       if np.any(position < lower) or np.any(position > upper):
-        self.fail('Entity {} is out of bounds: position={}, bounds={}'
-                  .format(entity.mjcf_model.model, position, (lower, upper)))
+        self.fail(
+            f'Entity {entity.mjcf_model.model} is out of bounds: position={position}, bounds={(lower, upper)}'
+        )
 
   def test_sample_non_colliding_positions(self):
     halfwidth = 0.05

@@ -88,9 +88,10 @@ class Walker(base.Walker):
     for eff_body in self.end_effectors:
       eff_geom = eff_body.find_all('geom')
       self._end_effector_geom_ids |= set(physics.bind(eff_geom).element_id)
-    self._body_geom_ids = set(
+    self._body_geom_ids = {
         physics.bind(geom).element_id
-        for geom in self.mjcf_model.find_all('geom'))
+        for geom in self.mjcf_model.find_all('geom')
+    }
     self._body_geom_ids.difference_update(self._end_effector_geom_ids)
 
   @property
@@ -186,13 +187,11 @@ class Walker(base.Walker):
 
   @composer.cached_property
   def mocap_to_observable_joint_order(self):
-    mocap_to_obs = [self.mocap_joints.index(j) for j in self.observable_joints]
-    return mocap_to_obs
+    return [self.mocap_joints.index(j) for j in self.observable_joints]
 
   @composer.cached_property
   def observable_to_mocap_joint_order(self):
-    obs_to_mocap = [self.observable_joints.index(j) for j in self.mocap_joints]
-    return obs_to_mocap
+    return [self.observable_joints.index(j) for j in self.mocap_joints]
 
   @property
   def end_effectors_pos_sensors(self):

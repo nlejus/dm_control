@@ -68,10 +68,8 @@ class ContextBase(metaclass=abc.ABCMeta):
     self._patients.append(obj)
 
   def dont_keep_alive(self, obj):
-    try:
+    with contextlib.suppress(ValueError):
       self._patients.remove(obj)
-    except ValueError:
-      pass
 
   def increment_refcount(self):
     self._refcount += 1
@@ -134,14 +132,12 @@ class ContextBase(metaclass=abc.ABCMeta):
               'this context is already current on another thread {!r}.'
               .format(self, self._render_executor.thread,
                       _CURRENT_THREAD_FOR_CONTEXT[id(self)]))
-        else:
-          current_context = (
-              _CURRENT_CONTEXT_FOR_THREAD[self._render_executor.thread])
-          if current_context:
-            del _CURRENT_THREAD_FOR_CONTEXT[current_context]
-          _CURRENT_THREAD_FOR_CONTEXT[id(self)] = self._render_executor.thread
-          _CURRENT_CONTEXT_FOR_THREAD[self._render_executor.thread] = id(self)
-          ctx.call(self._platform_make_current)
+        if current_context := _CURRENT_CONTEXT_FOR_THREAD[
+            self._render_executor.thread]:
+          del _CURRENT_THREAD_FOR_CONTEXT[current_context]
+        _CURRENT_THREAD_FOR_CONTEXT[id(self)] = self._render_executor.thread
+        _CURRENT_CONTEXT_FOR_THREAD[self._render_executor.thread] = id(self)
+        ctx.call(self._platform_make_current)
       yield ctx
 
   @abc.abstractmethod

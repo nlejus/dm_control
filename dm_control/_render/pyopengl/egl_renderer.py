@@ -112,8 +112,8 @@ class EGLContext(base.ContextBase):
         num_configs)
     if num_configs.value < 1:
       raise RuntimeError(
-          'EGL failed to find a framebuffer configuration that matches the '
-          'desired attributes: {}'.format(EGL_ATTRIBUTES))
+          f'EGL failed to find a framebuffer configuration that matches the desired attributes: {EGL_ATTRIBUTES}'
+      )
     EGL.eglBindAPI(EGL.EGL_OPENGL_API)
     self._context = EGL.eglCreateContext(
         EGL_DISPLAY, config, EGL.EGL_NO_CONTEXT, None)

@@ -15,6 +15,7 @@
 
 """Module defining the abstract entity class."""
 
+
 import abc
 import collections
 import os
@@ -26,8 +27,14 @@ from dm_control.composer import define
 from dm_control.mujoco.wrapper import mjbindings
 import numpy as np
 
-_OPTION_KEYS = set(['update_interval', 'buffer_size', 'delay', 'aggregator',
-                    'corruptor', 'enabled'])
+_OPTION_KEYS = {
+    'update_interval',
+    'buffer_size',
+    'delay',
+    'aggregator',
+    'corruptor',
+    'enabled',
+}
 
 _NO_ATTACHMENT_FRAME = 'No attachment frame found.'
 
@@ -101,20 +108,19 @@ class Observables:
         parent entity's full model identifier.
     """
 
-    if fully_qualified:
-      # We need to make sure that this property doesn't raise an AttributeError,
-      # otherwise __getattr__ is executed and we get a very funky error.
-      try:
-        model_identifier = self._entity.mjcf_model.full_identifier
-      except AttributeError:
-        raise ValueError('cannot retrieve the full identifier of mjcf_model')
-
-      return collections.OrderedDict(
-          [(os.path.join(model_identifier, name), observable)
-           for name, observable in self._observables.items()])
-    else:
+    if not fully_qualified:
       # Return a copy to prevent dict being edited.
       return self._observables.copy()
+    # We need to make sure that this property doesn't raise an AttributeError,
+    # otherwise __getattr__ is executed and we get a very funky error.
+    try:
+      model_identifier = self._entity.mjcf_model.full_identifier
+    except AttributeError:
+      raise ValueError('cannot retrieve the full identifier of mjcf_model')
+
+    return collections.OrderedDict(
+        [(os.path.join(model_identifier, name), observable)
+         for name, observable in self._observables.items()])
 
   def get_observable(self, name, name_fully_qualified=False):
     """Returns the observable with the given name.
@@ -125,14 +131,13 @@ class Observables:
         model's full identifier.
     """
 
-    if name_fully_qualified:
-      try:
-        model_identifier = self._entity.mjcf_model.full_identifier
-      except AttributeError:
-        raise ValueError('cannot retrieve the full identifier of mjcf_model')
-      return self._observables[name.replace(model_identifier, '')]
-    else:
+    if not name_fully_qualified:
       return self._observables[name]
+    try:
+      model_identifier = self._entity.mjcf_model.full_identifier
+    except AttributeError:
+      raise ValueError('cannot retrieve the full identifier of mjcf_model')
+    return self._observables[name.replace(model_identifier, '')]
 
   def set_options(self, options):
     """Configure Observables with an options dict.
@@ -248,8 +253,7 @@ class Entity(metaclass=abc.ABCMeta):
     if not exclude_self:
       yield self
     for attached_entity in self._attached:
-      for attached_entity_of_attached_entity in attached_entity.iter_entities():
-        yield attached_entity_of_attached_entity
+      yield from attached_entity.iter_entities()
 
   @property
   def observables(self):
@@ -310,14 +314,12 @@ class Entity(metaclass=abc.ABCMeta):
 
   def detach(self):
     """Detaches this entity if it has previously been attached."""
-    if self._parent is not None:
-      parent = self._parent()  # pylint: disable=not-callable
-      if parent:  # Weakref might dereference to None during garbage collection.
-        self.mjcf_model.detach()
-        parent._attached.remove(self)  # pylint: disable=protected-access
-      self._parent = None
-    else:
+    if self._parent is None:
       raise RuntimeError('Cannot detach an entity that is not attached.')
+    if parent := self._parent():
+      self.mjcf_model.detach()
+      parent._attached.remove(self)  # pylint: disable=protected-access
+    self._parent = None
 
   @property
   def parent(self):
@@ -370,9 +372,9 @@ class Entity(metaclass=abc.ABCMeta):
     elif vec_in_world_frame.shape[-1] == 3:
       return np.dot(vec_in_world_frame, xmat)
     else:
-      raise ValueError('`vec_in_world_frame` should have shape with final '
-                       'dimension 2 or 3: got {}'.format(
-                           vec_in_world_frame.shape))
+      raise ValueError(
+          f'`vec_in_world_frame` should have shape with final dimension 2 or 3: got {vec_in_world_frame.shape}'
+      )
 
   def global_xmat_to_local_frame(self, physics, xmat):
     """Transforms another entity's `xmat` into this entity's local frame.
@@ -403,8 +405,7 @@ class Entity(metaclass=abc.ABCMeta):
     if xmat.shape == (3, 3):
       return np.reshape(np.dot(self_xmat.T, xmat), input_shape)
     else:
-      raise ValueError('`xmat` should have shape (3, 3) or (9,): got {}'.format(
-          xmat.shape))
+      raise ValueError(f'`xmat` should have shape (3, 3) or (9,): got {xmat.shape}')
 
   def get_pose(self, physics):
     """Get the position and orientation of this entity relative to its parent.
@@ -432,8 +433,7 @@ class Entity(metaclass=abc.ABCMeta):
     Raises:
       RuntimeError: If the entity is not attached.
     """
-    root_joint = mjcf.get_frame_freejoint(self.mjcf_model)
-    if root_joint:
+    if root_joint := mjcf.get_frame_freejoint(self.mjcf_model):
       position = physics.bind(root_joint).qpos[:3]
       quaternion = physics.bind(root_joint).qpos[3:]
     else:
@@ -467,8 +467,7 @@ class Entity(metaclass=abc.ABCMeta):
     Raises:
       RuntimeError: If the entity is not attached.
     """
-    root_joint = mjcf.get_frame_freejoint(self.mjcf_model)
-    if root_joint:
+    if root_joint := mjcf.get_frame_freejoint(self.mjcf_model):
       if position is not None:
         physics.bind(root_joint).qpos[:3] = position
       if quaternion is not None:
@@ -538,8 +537,7 @@ class Entity(metaclass=abc.ABCMeta):
       angular velocity.
 
     """
-    root_joint = mjcf.get_frame_freejoint(self.mjcf_model)
-    if root_joint:
+    if root_joint := mjcf.get_frame_freejoint(self.mjcf_model):
       velocity = physics.bind(root_joint).qvel[:3]
       angular_velocity = physics.bind(root_joint).qvel[3:]
       return velocity, angular_velocity
@@ -559,8 +557,7 @@ class Entity(metaclass=abc.ABCMeta):
       angular_velocity: (optional) A NumPy array of size 3 specifying the
         angular velocity
     """
-    root_joint = mjcf.get_frame_freejoint(self.mjcf_model)
-    if root_joint:
+    if root_joint := mjcf.get_frame_freejoint(self.mjcf_model):
       if velocity is not None:
         physics.bind(root_joint).qvel[:3] = velocity
       if angular_velocity is not None:
