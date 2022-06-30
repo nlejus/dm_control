@@ -147,9 +147,10 @@ def comic_reward_fn(termination_error, termination_error_threshold,
   mt_reward, mt_debug_terms, mt_reward_terms = multi_term_pose_reward_fn(
       walker_features, reference_features)
   debug_terms.update(mt_debug_terms)
-  reward_terms = {k: 0.5 * v for k, v in termination_reward_terms.items()}
-  reward_terms.update(
-      {k: 0.5 * v for k, v in mt_reward_terms.items()})
+  reward_terms = {k: 0.5 * v
+                  for k, v in termination_reward_terms.items()
+                  } | {k: 0.5 * v
+                       for k, v in mt_reward_terms.items()}
   return RewardFnOutput(
       reward=0.5 * termination_reward + 0.5 * mt_reward,
       debug=debug_terms,
@@ -173,15 +174,13 @@ _REWARD_CHANNELS = {
 
 def get_reward(reward_key):
   if reward_key not in _REWARD_FN:
-    raise ValueError('Requested loss %s, which is not a valid option.' %
-                     reward_key)
+    raise ValueError(f'Requested loss {reward_key}, which is not a valid option.')
 
   return _REWARD_FN[reward_key]
 
 
 def get_reward_channels(reward_key):
   if reward_key not in _REWARD_CHANNELS:
-    raise ValueError('Requested loss %s, which is not a valid option.' %
-                     reward_key)
+    raise ValueError(f'Requested loss {reward_key}, which is not a valid option.')
 
   return _REWARD_CHANNELS[reward_key]

@@ -62,7 +62,7 @@ def _pymjcf_log_xml():
 
 def _get_attributes(size_names, strip_prefixes):
   """Creates a dict of valid attribute from Mujoco array size name."""
-  strip_regex = re.compile(r'\A({})_'.format('|'.join(strip_prefixes)))
+  strip_regex = re.compile(f"\A({'|'.join(strip_prefixes)})_")
   strip = lambda string: strip_regex.sub('', string)
   out = {}
   for name, size in sizes.array_sizes['mjdata'].items():
@@ -96,9 +96,9 @@ def _get_attributes(size_names, strip_prefixes):
 def _get_actuator_state_fields():
   actuator_state_fields = []
   for sizes_dict in sizes.array_sizes.values():
-    for field_name, dimensions in sizes_dict.items():
-      if dimensions[0] == 'na':
-        actuator_state_fields.append(field_name)
+    actuator_state_fields.extend(
+        field_name for field_name, dimensions in sizes_dict.items()
+        if dimensions[0] == 'na')
   return frozenset(actuator_state_fields)
 
 _ACTUATOR_STATE_FIELDS = _get_actuator_state_fields()
@@ -348,44 +348,42 @@ class Binding:
   def __getattr__(self, name):
     if name in Binding.__slots__:
       return super().__getattr__(name)
-    else:
-      try:
-        out = self._getattr_cache[name]
-        out._synchronize_from_backing_array()  # pylint: disable=protected-access
-      except KeyError:
-        array, index = self._get_cached_array_and_index(name)
-        triggers_dirty = self._attributes[name].triggers_dirty
+    try:
+      out = self._getattr_cache[name]
+      out._synchronize_from_backing_array()  # pylint: disable=protected-access
+    except KeyError:
+      array, index = self._get_cached_array_and_index(name)
+      triggers_dirty = self._attributes[name].triggers_dirty
 
-        # A list of (array, index) tuples specifying other addresses that need
-        # to be zeroed out when this array attribute is written to.
-        disable_on_write = []
-        for name_to_disable in self._attributes[name].disable_on_write:
-          array_to_disable, index_to_disable = self._get_cached_array_and_index(
-              name_to_disable)
+      # A list of (array, index) tuples specifying other addresses that need
+      # to be zeroed out when this array attribute is written to.
+      disable_on_write = []
+      for name_to_disable in self._attributes[name].disable_on_write:
+        array_to_disable, index_to_disable = self._get_cached_array_and_index(
+            name_to_disable)
           # Ensure that the result of indexing is a `SynchronizingArrayWrapper`
           # rather than a scalar, otherwise we won't be able to write into it.
-          if array_to_disable.ndim == 1:
-            if isinstance(index_to_disable, np.ndarray):
-              index_to_disable = index_to_disable.copy().reshape(-1, 1)
-            else:
-              index_to_disable = [index_to_disable]
-          disable_on_write.append((array_to_disable, index_to_disable))
+        if array_to_disable.ndim == 1:
+          index_to_disable = (index_to_disable.copy().reshape(-1, 1)
+                              if isinstance(index_to_disable, np.ndarray) else
+                              [index_to_disable])
+        disable_on_write.append((array_to_disable, index_to_disable))
 
-        if self._physics.is_dirty and not triggers_dirty:
-          self._physics.forward()
-        if isinstance(index, int) and array.ndim == 1:
-          # Case where indexing results in a scalar.
-          out = array[index]
-        else:
-          # Case where indexing results in an array.
-          out = SynchronizingArrayWrapper(
-              backing_array=array,
-              backing_index=index,
-              physics=self._physics,
-              triggers_dirty=triggers_dirty,
-              disable_on_write=disable_on_write)
-          self._getattr_cache[name] = out
-      return out
+      if self._physics.is_dirty and not triggers_dirty:
+        self._physics.forward()
+      if isinstance(index, int) and array.ndim == 1:
+        # Case where indexing results in a scalar.
+        out = array[index]
+      else:
+        # Case where indexing results in an array.
+        out = SynchronizingArrayWrapper(
+            backing_array=array,
+            backing_index=index,
+            physics=self._physics,
+            triggers_dirty=triggers_dirty,
+            disable_on_write=disable_on_write)
+        self._getattr_cache[name] = out
+    return out
 
   def __setattr__(self, name, value):
     if name in Binding.__slots__:

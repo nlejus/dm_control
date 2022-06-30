@@ -29,8 +29,7 @@ _BOTH_SEGMENTATION_AND_DEPTH_ENABLED = (
 
 def _check_mjcf_element(obj):
   if not isinstance(obj, mjcf.Element):
-    raise ValueError(
-        'expected an `mjcf.Element`, got type {}: {}'.format(type(obj), obj))
+    raise ValueError(f'expected an `mjcf.Element`, got type {type(obj)}: {obj}')
 
 
 def _check_mjcf_element_iterable(obj_iterable):
@@ -159,8 +158,7 @@ class MJCFCamera(base.Observable):
     """
     _check_mjcf_element(mjcf_element)
     if mjcf_element.tag != 'camera':
-      raise ValueError(
-          'expected a <camera> element: got {}'.format(mjcf_element))
+      raise ValueError(f'expected a <camera> element: got {mjcf_element}')
     self._mjcf_element = mjcf_element
     self._height = height
     self._width = width

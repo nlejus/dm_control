@@ -69,13 +69,12 @@ def break_valid_model(mjcf_model):
 def _parse_line_refs():
   line_ref_pattern = re.compile(r'\s*# !!LINE_REF\s*([^\s]+)')
   filename, _ = os.path.splitext(__file__)  # __file__ can be `.pyc`.
-  with open(filename + '.py') as f:
+  with open(f'{filename}.py') as f:
     src = f.read()
   src_lines = src.split('\n')
   for line_number, line in enumerate(src_lines):
-    match = line_ref_pattern.match(line)
-    if match:
-      LINE_REF[match.group(1)] = SourceLine(
-          line_number + 2, src_lines[line_number + 1].strip())
+    if match := line_ref_pattern.match(line):
+      LINE_REF[match[1]] = SourceLine(line_number + 2,
+                                      src_lines[line_number + 1].strip())
 
 _parse_line_refs()

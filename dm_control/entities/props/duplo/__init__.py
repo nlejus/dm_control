@@ -103,12 +103,10 @@ class Duplo(composer.Entity):
 
     for row in range(2):
       for column in range(4):
-        self._studs[row, column] = self._mjcf_root.find(
-            'site', 'stud_{}{}'.format(row, column))
-        self._holes[row, column] = self._mjcf_root.find(
-            'site', 'hole_{}{}'.format(row, column))
+        self._studs[row, column] = self._mjcf_root.find('site', f'stud_{row}{column}')
+        self._holes[row, column] = self._mjcf_root.find('site', f'hole_{row}{column}')
 
-    if not all(0 <= value <= 1 for value in color):
+    if any((0 <= value <= 1 for value in color)):
       raise ValueError(_COLOR_NOT_BETWEEN_0_AND_1.format(color))
     self._mjcf_root.default.geom.rgba[:3] = color
 

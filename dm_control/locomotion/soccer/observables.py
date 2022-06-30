@@ -80,10 +80,10 @@ class CoreObservablesAdder(ObservablesAdder):
         continue
       # Infer team prefix for `other` conditioned on `player.team`.
       if player.team != other.team:
-        prefix = 'opponent_{}'.format(opponent_id)
+        prefix = f'opponent_{opponent_id}'
         opponent_id += 1
       else:
-        prefix = 'teammate_{}'.format(teammate_id)
+        prefix = f'teammate_{teammate_id}'
         teammate_id += 1
 
       self._add_player_observables_on_other(player, other, prefix)

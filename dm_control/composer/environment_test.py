@@ -74,7 +74,7 @@ class EnvironmentTest(parameterized.TestCase):
   def test_get_spec(self, name, defined_in_task):
     task = DummyTask()
     env = composer.Environment(task)
-    with mock.patch.object(task, 'get_' + name) as mock_task_get_spec:
+    with mock.patch.object(task, f'get_{name}') as mock_task_get_spec:
       if defined_in_task:
         expected_spec = mock.Mock()
         mock_task_get_spec.return_value = expected_spec

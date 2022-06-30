@@ -45,9 +45,9 @@ class JointStaticIsolator:
     if not isinstance(joints, collections.abc.Iterable):
       joints = [joints]
     root_model = _get_root_model(joints)
-    other_joints = [joint for joint in root_model.find_all('joint')
-                    if joint not in joints]
-    if other_joints:
+    if other_joints := [
+        joint for joint in root_model.find_all('joint') if joint not in joints
+    ]:
       self._other_joints_mj = physics.bind(other_joints)
       self._initial_qpos = self._other_joints_mj.qpos.copy()
       self._initial_qvel = self._other_joints_mj.qvel.copy()

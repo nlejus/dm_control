@@ -125,9 +125,12 @@ def _add_velocity_actuator(joint):
 def _add_torque_sensor(joint):
   """Adds a torque sensor to a joint, returns the new MJCF element."""
   site = joint.parent.add(
-      'site', size=[1e-3], group=composer.SENSOR_SITES_GROUP,
-      name=joint.name+'_site')
-  return joint.root.sensor.add('torque', site=site, name=joint.name+'_torque')
+      'site',
+      size=[1e-3],
+      group=composer.SENSOR_SITES_GROUP,
+      name=f'{joint.name}_site',
+  )
+  return joint.root.sensor.add('torque', site=site, name=f'{joint.name}_torque')
 
 
 class JacoArmObservables(base.JointsObservables):

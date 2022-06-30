@@ -89,13 +89,13 @@ class Task(control.Task):
   @visualize_reward.setter
   def visualize_reward(self, value):
     if not isinstance(value, bool):
-      raise ValueError("Expected a boolean, got {}.".format(type(value)))
+      raise ValueError(f"Expected a boolean, got {type(value)}.")
     self._visualize_reward = value
 
 
 _MATERIALS = ["self", "effector", "target"]
-_DEFAULT = [name + "_default" for name in _MATERIALS]
-_HIGHLIGHT = [name + "_highlight" for name in _MATERIALS]
+_DEFAULT = [f"{name}_default" for name in _MATERIALS]
+_HIGHLIGHT = [f"{name}_highlight" for name in _MATERIALS]
 
 
 def _set_reward_colors(physics, reward):

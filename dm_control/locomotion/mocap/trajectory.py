@@ -142,13 +142,12 @@ class Trajectory:
   def _get_quantized_time(self, time):
     if time == float('inf'):
       return len(self._proto.timesteps) - 1
-    else:
-      divided_time = time / self._proto.dt
-      quantized_time = int(np.round(divided_time))
-      if np.abs(quantized_time - divided_time) > STEP_TIME_TOLERANCE:
-        raise ValueError('`time` should be a multiple of dt = {}: got {}'
-                         .format(self._proto.dt, time))
-      return quantized_time
+    divided_time = time / self._proto.dt
+    quantized_time = int(np.round(divided_time))
+    if np.abs(quantized_time - divided_time) > STEP_TIME_TOLERANCE:
+      raise ValueError(
+          f'`time` should be a multiple of dt = {self._proto.dt}: got {time}')
+    return quantized_time
 
   def _get_step_id(self, time):
     quantized_time = self._get_quantized_time(time)

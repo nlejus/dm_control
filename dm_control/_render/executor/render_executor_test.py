@@ -34,8 +34,7 @@ def enforce_timeout(timeout):
       thread.start()
       thread.join(timeout=timeout)
       self.assertFalse(
-          thread.is_alive(),
-          msg='Test timed out after {} seconds.'.format(timeout))
+          thread.is_alive(), msg=f'Test timed out after {timeout} seconds.')
     return wrapped_test
   return wrap
 

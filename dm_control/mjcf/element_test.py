@@ -596,9 +596,7 @@ class ElementTest(parameterized.TestCase):
   def testRemoveWithChildren(self):
     root = mjcf.RootElement()
     body = root.worldbody.add('body')
-    subbodies = []
-    for _ in range(5):
-      subbodies.append(body.add('body'))
+    subbodies = [body.add('body') for _ in range(5)]
     body.remove()
     for subbody in subbodies:
       self.assertTrue(subbody.is_removed)
@@ -850,7 +848,7 @@ class ElementTest(parameterized.TestCase):
       contents = f.read()
     _, filename = os.path.split(_TEXTURE_PATH)
     prefix, extension = os.path.splitext(filename)
-    vfs_filename = prefix + '-' + hashlib.sha1(contents).hexdigest() + extension
+    vfs_filename = f'{prefix}-{hashlib.sha1(contents).hexdigest()}{extension}'
     mujoco = parser.from_path(_TEST_MODEL_XML)
     self.assertDictEqual({vfs_filename: contents}, mujoco.get_assets())
 
@@ -862,7 +860,7 @@ class ElementTest(parameterized.TestCase):
     vfs_filename = hashlib.sha1(contents).hexdigest() + extension
     placeholder = mjcf.Asset(contents=contents, extension=extension)
     mujoco.asset.add('texture', name='fake_texture', file=placeholder)
-    self.assertContainsSubset(set([(vfs_filename, contents)]),
+    self.assertContainsSubset({(vfs_filename, contents)},
                               set(mujoco.get_assets().items()))
 
   def testGetAssetsFromDict(self):
@@ -901,7 +899,7 @@ class ElementTest(parameterized.TestCase):
       contents = f.read()
     _, filename = os.path.split(_TEXTURE_PATH)
     prefix, extension = os.path.splitext(filename)
-    vfs_filename = prefix + '-' + hashlib.sha1(contents).hexdigest() + extension
+    vfs_filename = f'{prefix}-{hashlib.sha1(contents).hexdigest()}{extension}'
     mujoco = parser.from_path(_TEST_MODEL_XML)
     mujoco_copy = copy.copy(mujoco)
     expected = {vfs_filename: contents}
@@ -967,22 +965,22 @@ class ElementTest(parameterized.TestCase):
   def testActuatorReordering(self):
 
     def make_model_with_mixed_actuators(name):
-      actuators = []
       root = mjcf.RootElement(model=name)
       body = root.worldbody.add('body')
       body.add('geom', type='sphere', size=[0.1])
       slider = body.add('joint', type='slide', name='slide_joint')
-      # Third-order `general` actuator.
-      actuators.append(
+      actuators = [
           root.actuator.add(
-              'general', dyntype='integrator', biastype='affine',
-              dynprm=[1, 0, 0], joint=slider, name='general_act'))
-      # Cylinder actuators are also third-order.
-      actuators.append(
-          root.actuator.add('cylinder', joint=slider, name='cylinder_act'))
-      # A second-order actuator, added after the third-order actuators.
-      actuators.append(
-          root.actuator.add('velocity', joint=slider, name='velocity_act'))
+              'general',
+              dyntype='integrator',
+              biastype='affine',
+              dynprm=[1, 0, 0],
+              joint=slider,
+              name='general_act',
+          ),
+          root.actuator.add('cylinder', joint=slider, name='cylinder_act'),
+          root.actuator.add('velocity', joint=slider, name='velocity_act'),
+      ]
       return root, actuators
 
     child_1, actuators_1 = make_model_with_mixed_actuators(name='child_1')

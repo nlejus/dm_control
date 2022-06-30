@@ -41,11 +41,7 @@ class CorridorsTest(parameterized.TestCase):
       self, position_offset, rotate_180_degrees, use_variations):
     walker_spawn_position = position_offset
 
-    if not rotate_180_degrees:
-      walker_spawn_rotation = None
-    else:
-      walker_spawn_rotation = np.pi
-
+    walker_spawn_rotation = np.pi if rotate_180_degrees else None
     if use_variations:
       walker_spawn_position = deterministic.Constant(position_offset)
       walker_spawn_rotation = deterministic.Constant(walker_spawn_rotation)

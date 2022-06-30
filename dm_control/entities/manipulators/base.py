@@ -112,8 +112,7 @@ class RobotArm(composer.Robot, metaclass=abc.ABCMeta):
     elif isinstance(site, str):
       site_name = site
     else:
-      raise ValueError('site should either be a string or mjcf.Element: got {}'
-                       .format(site))
+      raise ValueError(f'site should either be a string or mjcf.Element: got {site}')
     if target_quat is None:
       target_quat = DOWN_QUATERNION
     lower, upper = self._get_joint_pos_sampling_bounds(physics)

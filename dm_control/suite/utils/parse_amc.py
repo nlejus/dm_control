@@ -58,9 +58,10 @@ def convert(file_name, physics, timestep):
         `time`, a numpy array containing the corresponding times.
   """
   frame_values = parse(file_name)
-  joint2index = {}
-  for name in physics.named.data.qpos.axes.row.names:
-    joint2index[name] = physics.named.data.qpos.axes.row.convert_key_item(name)
+  joint2index = {
+      name: physics.named.data.qpos.axes.row.convert_key_item(name)
+      for name in physics.named.data.qpos.axes.row.names
+  }
   index2joint = {}
   for joint, index in joint2index.items():
     if isinstance(index, slice):
@@ -72,9 +73,9 @@ def convert(file_name, physics, timestep):
 
   # Convert frame_values to qpos
   amcvals2qpos_transformer = Amcvals2qpos(index2joint, _CMU_MOCAP_JOINT_ORDER)
-  qpos_values = []
-  for frame_value in frame_values:
-    qpos_values.append(amcvals2qpos_transformer(frame_value))
+  qpos_values = [
+      amcvals2qpos_transformer(frame_value) for frame_value in frame_values
+  ]
   qpos_values = np.stack(qpos_values)  # Time by nq
 
   # Interpolate/resample.
@@ -165,13 +166,10 @@ class Amcvals2qpos:
     amc2qpos_transform = np.zeros((len(index2joint), len(joint_order)))
     for i in range(len(index2joint)):
       for j in range(len(joint_order)):
-        if index2joint[i] == joint_order[j]:
-          if 'rx' in index2joint[i]:
-            amc2qpos_transform[i][j] = 1
-          elif 'ry' in index2joint[i]:
-            amc2qpos_transform[i][j] = 1
-          elif 'rz' in index2joint[i]:
-            amc2qpos_transform[i][j] = 1
+        if index2joint[i] == joint_order[j] and ('rx' in index2joint[i]
+                                                 or 'ry' in index2joint[i]
+                                                 or 'rz' in index2joint[i]):
+          amc2qpos_transform[i][j] = 1
     self.amc2qpos_transform = amc2qpos_transform
 
   def __call__(self, amc_val):

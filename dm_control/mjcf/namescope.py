@@ -109,10 +109,7 @@ class NameScope:
 
   @property
   def root(self):
-    if self._parent is None:
-      return self
-    else:
-      return self._parent.root
+    return self if self._parent is None else self._parent.root
 
   def full_prefix(self, prefix_root=None, as_list=False):
     """The prefix for identifiers belonging to this scope.
@@ -136,17 +133,15 @@ class NameScope:
       prefix_list = []
     if as_list:
       return prefix_list
-    else:
-      if prefix_list:
-        prefix_list.append('')
-      return constants.PREFIX_SEPARATOR.join(prefix_list)
+    if prefix_list:
+      prefix_list.append('')
+    return constants.PREFIX_SEPARATOR.join(prefix_list)
 
   def _assign(self, namespace, identifier, obj):
     """Checks a proposed identifier's validity before assigning to an object."""
     namespace_dict = self._namespaces[namespace]
     if not isinstance(identifier, str):
-      raise ValueError(
-          'Identifier must be a string: got {}'.format(type(identifier)))
+      raise ValueError(f'Identifier must be a string: got {type(identifier)}')
     elif constants.PREFIX_SEPARATOR in identifier:
       raise ValueError(
           'Identifier cannot contain {!r}: got {}'

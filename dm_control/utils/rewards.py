@@ -40,12 +40,12 @@ def _sigmoids(x, value_at_1, sigmoid):
   """
   if sigmoid in ('cosine', 'linear', 'quadratic'):
     if not 0 <= value_at_1 < 1:
-      raise ValueError('`value_at_1` must be nonnegative and smaller than 1, '
-                       'got {}.'.format(value_at_1))
-  else:
-    if not 0 < value_at_1 < 1:
-      raise ValueError('`value_at_1` must be strictly between 0 and 1, '
-                       'got {}.'.format(value_at_1))
+      raise ValueError(
+          f'`value_at_1` must be nonnegative and smaller than 1, got {value_at_1}.'
+      )
+  elif not 0 < value_at_1 < 1:
+    raise ValueError(
+        f'`value_at_1` must be strictly between 0 and 1, got {value_at_1}.')
 
   if sigmoid == 'gaussian':
     scale = np.sqrt(-2 * np.log(value_at_1))

@@ -67,6 +67,6 @@ class Copier:
 
       # Finally, copy attributes into dest_child.
       child_copier = Copier(source_child)
-      newly_created_elements.update(
-          child_copier.copy_into(dest_child, override_child_attributes))
+      newly_created_elements |= child_copier.copy_into(
+          dest_child, override_child_attributes)
     return newly_created_elements

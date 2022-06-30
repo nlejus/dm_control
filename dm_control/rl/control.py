@@ -179,13 +179,13 @@ def compute_n_steps(control_timestep, physics_timestep, tolerance=1e-8):
   """
   if control_timestep < physics_timestep:
     raise ValueError(
-        'Control timestep ({}) cannot be smaller than physics timestep ({}).'.
-        format(control_timestep, physics_timestep))
+        f'Control timestep ({control_timestep}) cannot be smaller than physics timestep ({physics_timestep}).'
+    )
   if abs((control_timestep / physics_timestep - round(
       control_timestep / physics_timestep))) > tolerance:
     raise ValueError(
-        'Control timestep ({}) must be an integer multiple of physics timestep '
-        '({})'.format(control_timestep, physics_timestep))
+        f'Control timestep ({control_timestep}) must be an integer multiple of physics timestep ({physics_timestep})'
+    )
   return int(round(control_timestep / physics_timestep))
 
 
@@ -238,10 +238,8 @@ class Physics(metaclass=abc.ABCMeta):
     Yields:
       The `Physics` instance.
     """
-    try:
+    with contextlib.suppress(PhysicsError):
       self.reset()
-    except PhysicsError:
-      pass
     yield self
     self.after_reset()
 

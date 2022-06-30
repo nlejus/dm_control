@@ -280,13 +280,14 @@ class HooksTestMixin:
                                     control_timestep=self.control_timestep,
                                     test_case=self)
 
-    self.entities = []
-    for i in range(9):
-      self.entities.append(TrackedEntity(name='entity_{}'.format(i),
-                                         physics_timestep=self.physics_timestep,
-                                         control_timestep=self.control_timestep,
-                                         test_case=self))
-
+    self.entities = [
+        TrackedEntity(
+            name=f'entity_{i}',
+            physics_timestep=self.physics_timestep,
+            control_timestep=self.control_timestep,
+            test_case=self,
+        ) for i in range(9)
+    ]
     ########################################
     # Make the following entity hierarchy  #
     #                  0                   #

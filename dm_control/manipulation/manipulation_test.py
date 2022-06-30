@@ -39,10 +39,7 @@ _NUM_STEPS_PER_EPISODE = 10
 def _get_fix_seed():
   global _FIX_SEED
   if _FIX_SEED is None:
-    if FLAGS.is_parsed():
-      _FIX_SEED = FLAGS.fix_seed
-    else:
-      _FIX_SEED = FLAGS['fix_seed'].default
+    _FIX_SEED = FLAGS.fix_seed if FLAGS.is_parsed() else FLAGS['fix_seed'].default
   return _FIX_SEED
 
 

@@ -134,25 +134,23 @@ class RunThroughCorridor(composer.Task):
         if self._is_disallowed_contact(c):
           self._failure_termination = True
           break
-    if self._terminate_at_height is not None:
-      if any(physics.bind(self._walker.end_effectors).xpos[:, -1] <
-             self._terminate_at_height):
-        self._failure_termination = True
+    if self._terminate_at_height is not None and any(
+        physics.bind(self._walker.end_effectors).xpos[:, -1] <
+        self._terminate_at_height):
+      self._failure_termination = True
 
   def get_reward(self, physics):
     walker_xvel = physics.bind(self._walker.root_body).subtree_linvel[0]
-    xvel_term = rewards.tolerance(
-        walker_xvel, (self._vel, self._vel),
+    return rewards.tolerance(
+        walker_xvel,
+        (self._vel, self._vel),
         margin=self._vel,
         sigmoid='linear',
-        value_at_margin=0.0)
-    return xvel_term
+        value_at_margin=0.0,
+    )
 
   def should_terminate_episode(self, physics):
     return self._failure_termination
 
   def get_discount(self, physics):
-    if self._failure_termination:
-      return 0.
-    else:
-      return 1.
+    return 0. if self._failure_termination else 1.

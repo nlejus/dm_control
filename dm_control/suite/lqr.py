@@ -122,9 +122,9 @@ def _make_body(body_id, stiffness_range, damping_range, random):
    A new instance of `etree.Element`. A body element with two children: joint
    and geom.
   """
-  body_name = 'body_{}'.format(body_id)
-  joint_name = 'joint_{}'.format(body_id)
-  geom_name = 'geom_{}'.format(body_id)
+  body_name = f'body_{body_id}'
+  joint_name = f'joint_{body_id}'
+  geom_name = f'geom_{body_id}'
 
   body = etree.Element('body', name=body_name)
   body.set('pos', '.25 0 0')
@@ -174,7 +174,7 @@ def _make_model(n_bodies,
   for body in range(n_bodies):
     # Inserting body.
     child = _make_body(body, stiffness_range, damping_range, random)
-    site_name = 'site_{}'.format(body)
+    site_name = f'site_{body}'
     child.append(etree.Element('site', name=site_name))
 
     if body == 0:
@@ -182,15 +182,15 @@ def _make_model(n_bodies,
     # Add actuators to the first n_actuators bodies.
     if body < n_actuators:
       # Adding actuator.
-      joint_name = 'joint_{}'.format(body)
-      motor_name = 'motor_{}'.format(body)
+      joint_name = f'joint_{body}'
+      motor_name = f'motor_{body}'
       child.find('joint').set('name', joint_name)
       actuator.append(etree.Element('motor', name=motor_name, joint=joint_name))
 
     # Add a tendon between consecutive bodies (for visualisation purposes only).
     if body < n_bodies - 1:
-      child_site_name = 'site_{}'.format(body + 1)
-      tendon_name = 'tendon_{}'.format(body)
+      child_site_name = f'site_{body + 1}'
+      tendon_name = f'tendon_{body}'
       spatial = etree.SubElement(tendon, 'spatial', name=tendon_name)
       spatial.append(etree.Element('site', site=site_name))
       spatial.append(etree.Element('site', site=child_site_name))

@@ -40,11 +40,10 @@ def _walker(name, walker_id, marker_rgba):
 
 
 def _team_players(team_size, team, team_name, team_color):
-  team_of_players = []
-  for i in range(team_size):
-    team_of_players.append(
-        soccer.Player(team, _walker("%s%d" % (team_name, i), i, team_color)))
-  return team_of_players
+  return [
+      soccer.Player(team, _walker("%s%d" % (team_name, i), i, team_color))
+      for i in range(team_size)
+  ]
 
 
 def _home_team(team_size):
@@ -76,7 +75,7 @@ def _observables_adder(observables_adder):
     return soccer.MultiObservablesAdder(
         [soccer.CoreObservablesAdder(),
          soccer.InterceptionObservablesAdder()])
-  raise ValueError("Unrecognized observable_adder %s" % observables_adder)
+  raise ValueError(f"Unrecognized observable_adder {observables_adder}")
 
 
 class TaskTest(parameterized.TestCase):
@@ -283,7 +282,8 @@ class TaskTest(parameterized.TestCase):
       np.testing.assert_allclose(
           np.squeeze(obs["prev_action"], axis=0),
           actions[walker_idx],
-          err_msg="Walker {}: incorrect previous action.".format(walker_idx))
+          err_msg=f"Walker {walker_idx}: incorrect previous action.",
+      )
 
   @parameterized.named_parameters(
       dict(testcase_name="1vs2_draw",
@@ -426,16 +426,15 @@ class TaskTest(parameterized.TestCase):
   def test_render(self, take_step):
     height = 100
     width = 150
-    tracking_cameras = []
-    for min_distance in [1, 1, 2]:
-      tracking_cameras.append(
-          camera.MultiplayerTrackingCamera(
-              min_distance=min_distance,
-              distance_factor=1,
-              smoothing_update_speed=0.1,
-              width=width,
-              height=height,
-          ))
+    tracking_cameras = [
+        camera.MultiplayerTrackingCamera(
+            min_distance=min_distance,
+            distance_factor=1,
+            smoothing_update_speed=0.1,
+            width=width,
+            height=height,
+        ) for min_distance in [1, 1, 2]
+    ]
     env = _env(_home_team(1) + _away_team(1), tracking_cameras=tracking_cameras)
     env.reset()
     if take_step:
@@ -460,14 +459,16 @@ class UniformInitializerTest(parameterized.TestCase):
     xy = env.physics.bind(root_bodies).xpos[:, :2].copy()
     with self.subTest("X and Y positions within bounds"):
       if np.any(abs(xy) > xy_bounds):
-        self.fail("Walker(s) spawned out of bounds. Expected abs(xy) "
-                  "<= {}, got:\n{}".format(xy_bounds, xy))
+        self.fail(
+            f"Walker(s) spawned out of bounds. Expected abs(xy) <= {xy_bounds}, got:\n{xy}"
+        )
     env.reset()
     xy2 = env.physics.bind(root_bodies).xpos[:, :2].copy()
     with self.subTest("X and Y positions change after reset"):
       if np.any(xy == xy2):
-        self.fail("Walker(s) have the same X and/or Y coordinates before and "
-                  "after reset. Before: {}, after: {}.".format(xy, xy2))
+        self.fail(
+            f"Walker(s) have the same X and/or Y coordinates before and after reset. Before: {xy}, after: {xy2}."
+        )
 
   def test_walker_rotation(self):
     initializer = initializers.UniformInitializer()
@@ -539,8 +540,9 @@ class UniformInitializerTest(parameterized.TestCase):
     xyz = position.copy()
     with self.subTest("X and Y positions within bounds"):
       if np.any(abs(xyz[:2]) > xy_bounds):
-        self.fail("Ball spawned out of bounds. Expected abs(xy) "
-                  "<= {}, got:\n{}".format(xy_bounds, xyz[:2]))
+        self.fail(
+            f"Ball spawned out of bounds. Expected abs(xy) <= {xy_bounds}, got:\n{xyz[:2]}"
+        )
     with self.subTest("Z position equal to `init_ball_z`"):
       self.assertEqual(xyz[2], init_ball_z)
     env.reset()
@@ -548,8 +550,9 @@ class UniformInitializerTest(parameterized.TestCase):
     xyz2 = position.copy()
     with self.subTest("X and Y positions change after reset"):
       if np.any(xyz[:2] == xyz2[:2]):
-        self.fail("Ball has the same XY position before and after reset. "
-                  "Before: {}, after: {}.".format(xyz[:2], xyz2[:2]))
+        self.fail(
+            f"Ball has the same XY position before and after reset. Before: {xyz[:2]}, after: {xyz2[:2]}."
+        )
 
   def test_ball_velocity(self):
     initializer = initializers.UniformInitializer()

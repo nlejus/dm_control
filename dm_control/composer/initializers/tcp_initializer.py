@@ -146,12 +146,14 @@ class ToolCenterPointInitializer(composer.Initializer):
                                       random_state=random_state)
       target_quat = variation.evaluate(self._quaternion,
                                        random_state=random_state)
-      success = self._arm.set_site_to_xpos(
-          physics=physics, random_state=random_state, site=target_site,
-          target_pos=target_pos, target_quat=target_quat,
-          max_ik_attempts=self._max_ik_attempts)
-
-      if success:
+      if success := self._arm.set_site_to_xpos(
+          physics=physics,
+          random_state=random_state,
+          site=target_site,
+          target_pos=target_pos,
+          target_quat=target_quat,
+          max_ik_attempts=self._max_ik_attempts,
+      ):
         physics.forward()  # Recalculate contacts.
         if (self._ignore_collisions
             or not self._has_relevant_collisions(physics)):

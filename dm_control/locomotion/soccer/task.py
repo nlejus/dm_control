@@ -109,11 +109,10 @@ class Task(composer.Task):
 
   @property
   def observables(self):
-    observables = []
-    for player in self.players:
-      observables.append(
-          player.walker.observables.as_dict(fully_qualified=False))
-    return observables
+    return [
+        player.walker.observables.as_dict(fully_qualified=False)
+        for player in self.players
+    ]
 
   def _throw_in(self, physics, random_state, ball):
     x, y, _ = physics.bind(ball.geom).xpos

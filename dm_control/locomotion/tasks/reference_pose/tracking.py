@@ -82,7 +82,7 @@ def _strip_reference_prefix(dictionary: Mapping[Text, Any],
     keys specified by keep_prefixes).
   """
   keep_prefixes = keep_prefixes or []
-  new_dictionary = dict()
+  new_dictionary = {}
   for key in dictionary:
     if key.startswith(prefix):
       key_without_prefix = key.split(prefix)[1]
@@ -221,7 +221,7 @@ class ReferencePosesTask(composer.Task, metaclass=abc.ABCMeta):
     self._current_start_time = 0.0
     self._last_step = 0
     self._current_clip_index = 0
-    self._reference_observations = dict()
+    self._reference_observations = {}
     self._end_mocap = False
     self._should_truncate = False
 
@@ -243,7 +243,7 @@ class ReferencePosesTask(composer.Task, metaclass=abc.ABCMeta):
     self._walker_features_prev = tree.map_structure(
         lambda x: x[0], self._clip_reference_features)
 
-    self._current_reference_features = dict()
+    self._current_reference_features = {}
     self._reference_ego_bodies_quats = collections.defaultdict(dict)
     # if requested add ghost body to visualize motion capture reference.
     if self._ghost_offset is not None:
@@ -279,12 +279,12 @@ class ReferencePosesTask(composer.Task, metaclass=abc.ABCMeta):
       quaternions.append(self._clip_reference_features[quaternion_key])
       del self._clip_reference_features[position_key]
       del self._clip_reference_features[quaternion_key]
-    # positions has dimension (#props, #timesteps, 3). However, the convention
-    # for reference observations is (#timesteps, #props, 3). Therefore we
-    # transpose the dimensions by specifying the desired positions in the list
-    # for each dimension as an argument to np.transpose.
-    axes = [1, 0, 2]
     if self._prop_prefixes:
+      # positions has dimension (#props, #timesteps, 3). However, the convention
+      # for reference observations is (#timesteps, #props, 3). Therefore we
+      # transpose the dimensions by specifying the desired positions in the list
+      # for each dimension as an argument to np.transpose.
+      axes = [1, 0, 2]
       self._clip_reference_features['prop_positions'] = np.transpose(
           positions, axes=axes)
       self._clip_reference_features['prop_quaternions'] = np.transpose(
@@ -594,11 +594,11 @@ class ReferencePosesTask(composer.Task, metaclass=abc.ABCMeta):
     time_steps = self._time_step + self._ref_steps
     obs = []
     for t in time_steps:
-      for b in self._body_idxs:
-        obs.append(
-            tr.quat_diff(
-                self._walker_features['body_quaternions'][b, :],
-                self._clip_reference_features['body_quaternions'][t, b, :]))
+      obs.extend(
+          tr.quat_diff(
+              self._walker_features['body_quaternions'][b, :],
+              self._clip_reference_features['body_quaternions'][t, b, :],
+          ) for b in self._body_idxs)
     return np.concatenate([o.flatten() for o in obs])
 
   def get_reference_rel_bodies_pos_local(self, physics: 'mjcf.Physics'):
@@ -631,11 +631,12 @@ class ReferencePosesTask(composer.Task, metaclass=abc.ABCMeta):
     del physics  # physics unused by reference observations.
 
     time_steps = self._time_step + self._ref_steps
-    obs = []
-    for t in time_steps:
-      obs.append(
-          tr.quat_diff(self._walker_features['quaternion'],
-                       self._clip_reference_features['quaternion'][t, :]))
+    obs = [
+        tr.quat_diff(
+            self._walker_features['quaternion'],
+            self._clip_reference_features['quaternion'][t, :],
+        ) for t in time_steps
+    ]
     return np.concatenate([o.flatten() for o in obs])
 
   def get_reference_appendages_pos(self, physics: 'mjcf.Physics'):
@@ -707,10 +708,10 @@ class ReferencePosesTask(composer.Task, metaclass=abc.ABCMeta):
     return np.array([self._current_clip_index])
 
   def get_all_reference_observations(self, physics: 'mjcf.Physics'):
-    reference_observations = dict()
-    reference_observations[
-        'walker/reference_rel_bodies_pos_local'] = self.get_reference_rel_bodies_pos_local(
-            physics)
+    reference_observations = {
+        'walker/reference_rel_bodies_pos_local':
+        self.get_reference_rel_bodies_pos_local(physics)
+    }
     reference_observations[
         'walker/reference_rel_joints'] = self.get_reference_rel_joints(physics)
     reference_observations[

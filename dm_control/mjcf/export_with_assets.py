@@ -36,10 +36,11 @@ def export_with_assets(mjcf_model, out_dir, out_file_name=None):
     ValueError: If `out_file_name` is a string that does not end with '.xml'.
   """
   if out_file_name is None:
-    out_file_name = mjcf_model.model + '.xml'
+    out_file_name = f'{mjcf_model.model}.xml'
   elif not out_file_name.lower().endswith('.xml'):
-    raise ValueError('If `out_file_name` is specified it must end with '
-                     '\'.xml\': got {}'.format(out_file_name))
+    raise ValueError(
+        f"If `out_file_name` is specified it must end with \'.xml\': got {out_file_name}"
+    )
   assets = mjcf_model.get_assets()
   # This should never happen because `mjcf` does not support `.xml` assets.
   assert out_file_name not in assets

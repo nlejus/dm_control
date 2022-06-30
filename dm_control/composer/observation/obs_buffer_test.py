@@ -24,7 +24,7 @@ def _generate_constant_schedule(update_timestep, delay, control_timestep,
                                 n_observed_steps):
   first = update_timestep
   last = control_timestep * n_observed_steps + 1
-  return [(i, delay) for i in range(first, last, update_timestep)]
+  return [(i, delay) for i in range(first, last, first)]
 
 
 class BufferTest(parameterized.TestCase):

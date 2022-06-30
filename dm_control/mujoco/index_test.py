@@ -313,8 +313,7 @@ def _iter_indexers(model, data):
   size_to_axis_indexer = index.make_axis_indexers(model)
   for struct, struct_name in ((model, 'mjmodel'), (data, 'mjdata')):
     indexer = index.struct_indexer(struct, struct_name, size_to_axis_indexer)
-    for field_name, field_indexer in indexer._asdict().items():
-      yield field_name, field_indexer
+    yield from indexer._asdict().items()
 
 
 class AllFieldsTest(parameterized.TestCase):

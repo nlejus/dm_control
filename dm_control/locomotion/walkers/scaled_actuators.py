@@ -27,8 +27,7 @@ _GOT_INVALID_TARGET = '`target` tag type should be one of {}: got {{}}'.format(
 
 
 def _check_target_and_kwargs(target, **kwargs):
-  invalid_kwargs = _DISALLOWED_KWARGS.intersection(kwargs)
-  if invalid_kwargs:
+  if invalid_kwargs := _DISALLOWED_KWARGS.intersection(kwargs):
     raise TypeError(_GOT_INVALID_KWARGS.format(sorted(invalid_kwargs)))
   if target.tag not in _ALLOWED_TAGS:
     raise TypeError(_GOT_INVALID_TARGET.format(target))

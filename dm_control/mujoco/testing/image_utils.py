@@ -51,8 +51,8 @@ _SUBDIR_TEMPLATE = (
 
 def _get_subdir(name, seed, backend_string, camera_spec):
   if camera_spec.render_flag_overrides:
-    overrides = ('{}_{}'.format(k, v) for k, v in
-                 sorted(camera_spec.render_flag_overrides.items()))
+    overrides = (f'{k}_{v}'
+                 for k, v in sorted(camera_spec.render_flag_overrides.items()))
     render_flag_overrides_string = '_' + '_'.join(overrides)
   else:
     render_flag_overrides_string = ''
@@ -217,7 +217,7 @@ def assert_images_close(expected, actual, tolerance=10.):
   """
   rms = compute_rms(expected, actual)
   if rms > tolerance:
-    message = 'RMS error exceeds tolerance ({} > {})'.format(rms, tolerance)
+    message = f'RMS error exceeds tolerance ({rms} > {tolerance})'
     raise ImagesNotCloseError(message, expected=expected, actual=actual)
 
 
@@ -245,9 +245,9 @@ def save_images_on_failure(output_dir):
         difference = e.actual.astype(np.double) - e.expected
         difference = (0.5 * (difference + 255)).astype(np.uint8)
         base_name = os.path.join(output_dir, method_name)
-        _save_pixels(e.expected, base_name + '-expected.png')
-        _save_pixels(e.actual, base_name + '-actual.png')
-        _save_pixels(difference, base_name + '-difference.png')
+        _save_pixels(e.expected, f'{base_name}-expected.png')
+        _save_pixels(e.actual, f'{base_name}-actual.png')
+        _save_pixels(difference, f'{base_name}-difference.png')
         msg = ('{}. Debugging images saved to '
                '{}-{{expected,actual,difference}}.png.'.format(e, base_name))
         new_e = ImagesNotCloseError(msg, expected=e.expected, actual=e.actual)

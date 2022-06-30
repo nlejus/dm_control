@@ -307,18 +307,20 @@ class GapsCorridor(EmptyCorridor):
         self._ground_body.add(
             'geom',
             type='box',
-            name='floor_{}'.format(platform_id),
+            name=f'floor_{platform_id}',
             pos=platform_pos,
             size=platform_size,
-            material=self._ground_material)
+            material=self._ground_material,
+        )
       else:
         self._ground_body.add(
             'geom',
             type='box',
             rgba=variation.evaluate(self._ground_rgba, random_state),
-            name='floor_{}'.format(platform_id),
+            name=f'floor_{platform_id}',
             pos=platform_pos,
-            size=platform_size)
+            size=platform_size,
+        )
 
       platform_id += 1
 
@@ -421,10 +423,11 @@ class WallsCorridor(EmptyCorridor):
       self._walls_body.add(
           'geom',
           type='box',
-          name='wall_{}'.format(wall_id),
+          name=f'wall_{wall_id}',
           pos=wall_pos,
           size=wall_size,
-          rgba=wall_rgba)
+          rgba=wall_rgba,
+      )
 
       wall_id += 1
       wall_x += variation.evaluate(self._wall_gap, random_state=random_state)

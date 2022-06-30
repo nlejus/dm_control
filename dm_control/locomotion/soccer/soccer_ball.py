@@ -34,8 +34,7 @@ _DEFAULT_DAMP_RATIO = 0.4
 
 
 def _get_texture(name):
-  contents = resources.GetResource(
-      os.path.join(_ASSETS_PATH, '{}.png'.format(name)))
+  contents = resources.GetResource(os.path.join(_ASSETS_PATH, f'{name}.png'))
   return mjcf.Asset(contents, '.png')
 
 

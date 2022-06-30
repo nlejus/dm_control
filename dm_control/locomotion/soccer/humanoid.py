@@ -147,20 +147,18 @@ class Humanoid(cmu_humanoid.CMUHumanoidPositionControlled):
       hand = self._mjcf_root.find('body', hand_name)
       for geom in hand.find_all('geom'):
         geom.rgba = (0, 0, 0, 0)
-        if geom.name == hand_name:
-          geom_size = geom.size * 1.3  # Palm rescaling.
-        else:
-          geom_size = geom.size * 1.5  # Finger rescaling.
+        geom_size = geom.size * 1.3 if geom.name == hand_name else geom.size * 1.5
         geom.parent.add(
             'geom',
-            name=geom.name + '_visual',
+            name=f'{geom.name}_visual',
             type=geom.type,
             quat=geom.quat,
             mass=0,
             contype=0,
             conaffinity=0,
             size=geom_size,
-            pos=geom.pos * 1.5)
+            pos=geom.pos * 1.5,
+        )
 
     # Lighting: remove tracking light as we have multiple walkers in the scene.
     tracking_light = self._mjcf_root.find('light', 'tracking_light')

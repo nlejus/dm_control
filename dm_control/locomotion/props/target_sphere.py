@@ -195,26 +195,27 @@ class TargetSphereTwoTouch(composer.Entity):
     self._touched_twice = False
 
   def _update_activation(self, physics):
-    if not (self._touched_once and self._touched_twice):
-      for contact in physics.data.contact:
-        if self._specific_collision_geom_ids:
-          has_specific_collision = (
-              contact.geom1 in self._specific_collision_geom_ids or
-              contact.geom2 in self._specific_collision_geom_ids)
-        else:
-          has_specific_collision = True
-        if (has_specific_collision and
-            self._geom_id in (contact.geom1, contact.geom2)):
-          if not self._touched_once:
-            self._touched_once = True
-            self._touch_time = physics.time()
-            physics.bind(self._material).texid = physics.bind(
-                self._texture_interval).element_id
-          if self._touched_once and (
-              physics.time() > (self._touch_time + self._touch_debounce)):
-            self._touched_twice = True
-            physics.bind(self._material).texid = physics.bind(
-                self._texture_final).element_id
+    if (self._touched_once and self._touched_twice):
+      return
+    for contact in physics.data.contact:
+      if self._specific_collision_geom_ids:
+        has_specific_collision = (
+            contact.geom1 in self._specific_collision_geom_ids or
+            contact.geom2 in self._specific_collision_geom_ids)
+      else:
+        has_specific_collision = True
+      if (has_specific_collision and
+          self._geom_id in (contact.geom1, contact.geom2)):
+        if not self._touched_once:
+          self._touched_once = True
+          self._touch_time = physics.time()
+          physics.bind(self._material).texid = physics.bind(
+              self._texture_interval).element_id
+        if self._touched_once and (
+            physics.time() > (self._touch_time + self._touch_debounce)):
+          self._touched_twice = True
+          physics.bind(self._material).texid = physics.bind(
+              self._texture_final).element_id
 
   def initialize_episode(self, physics, unused_random_state):
     self._geom_id = physics.model.name2id(self._geom.full_identifier, 'geom')

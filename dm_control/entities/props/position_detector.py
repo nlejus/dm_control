@@ -25,9 +25,7 @@ _RENDERED_HEIGHT_IN_2D_MODE = 0.01
 
 def _ensure_3d(pos):
   # Pad the array with a zero if its length is 2.
-  if len(pos) == 2:
-    return np.hstack([pos, 0.])
-  return pos
+  return np.hstack([pos, 0.]) if len(pos) == 2 else pos
 
 
 class _Detection:
@@ -131,14 +129,19 @@ class PositionDetector(composer.Entity):
         'site', name='upper', pos=self._upper_3d, size=[0.05],
         rgba=self._rgba)
     self._lower_sensor = self._mjcf_root.sensor.add(
-        'framepos', objtype='site', objname=self._lower_site,
-        name='{}_lower'.format(name))
+        'framepos',
+        objtype='site',
+        objname=self._lower_site,
+        name=f'{name}_lower',
+    )
     self._mid_sensor = self._mjcf_root.sensor.add(
-        'framepos', objtype='site', objname=self._mid_site,
-        name='{}_mid'.format(name))
+        'framepos', objtype='site', objname=self._mid_site, name=f'{name}_mid')
     self._upper_sensor = self._mjcf_root.sensor.add(
-        'framepos', objtype='site', objname=self._upper_site,
-        name='{}_upper'.format(name))
+        'framepos',
+        objtype='site',
+        objname=self._upper_site,
+        name=f'{name}_upper',
+    )
 
     if not visible:
       self._site.group = composer.SENSOR_SITES_GROUP

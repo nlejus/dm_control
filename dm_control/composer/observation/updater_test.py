@@ -111,12 +111,10 @@ class UpdaterTest(parameterized.TestCase):
 
     def make_value(obs):
       value = obs(physics=None, random_state=None)
-      if obs.aggregator:
-        return value
-      else:
+      if not obs.aggregator:
         value = np.array(value)
         value = value[np.newaxis, ...]
-        return value
+      return value
 
     expected_values = list_or_tuple((
         {'two': make_value(observables[0]['two'])},

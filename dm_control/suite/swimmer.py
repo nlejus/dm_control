@@ -83,7 +83,7 @@ def _make_swimmer(n_joints, time_limit=_DEFAULT_TIME_LIMIT, random=None,
 def _make_model(n_bodies):
   """Generates an xml string defining a swimmer with `n_bodies` bodies."""
   if n_bodies < 3:
-    raise ValueError('At least 3 bodies required. Received {}'.format(n_bodies))
+    raise ValueError(f'At least 3 bodies required. Received {n_bodies}')
   mjcf = etree.fromstring(common.read_model('swimmer.xml'))
   head_body = mjcf.find('./worldbody/body')
   actuator = etree.SubElement(mjcf, 'actuator')
@@ -91,20 +91,20 @@ def _make_model(n_bodies):
 
   parent = head_body
   for body_index in range(n_bodies - 1):
-    site_name = 'site_{}'.format(body_index)
+    site_name = f'site_{body_index}'
     child = _make_body(body_index=body_index)
     child.append(etree.Element('site', name=site_name))
-    joint_name = 'joint_{}'.format(body_index)
+    joint_name = f'joint_{body_index}'
     joint_limit = 360.0/n_bodies
-    joint_range = '{} {}'.format(-joint_limit, joint_limit)
+    joint_range = f'{-joint_limit} {joint_limit}'
     child.append(etree.Element('joint', {'name': joint_name,
                                          'range': joint_range}))
-    motor_name = 'motor_{}'.format(body_index)
+    motor_name = f'motor_{body_index}'
     actuator.append(etree.Element('motor', name=motor_name, joint=joint_name))
-    velocimeter_name = 'velocimeter_{}'.format(body_index)
+    velocimeter_name = f'velocimeter_{body_index}'
     sensor.append(etree.Element('velocimeter', name=velocimeter_name,
                                 site=site_name))
-    gyro_name = 'gyro_{}'.format(body_index)
+    gyro_name = f'gyro_{body_index}'
     sensor.append(etree.Element('gyro', name=gyro_name, site=site_name))
     parent.append(child)
     parent = child
@@ -123,9 +123,9 @@ def _make_model(n_bodies):
 
 def _make_body(body_index):
   """Generates an xml string defining a single physical body."""
-  body_name = 'segment_{}'.format(body_index)
-  visual_name = 'visual_{}'.format(body_index)
-  inertial_name = 'inertial_{}'.format(body_index)
+  body_name = f'segment_{body_index}'
+  visual_name = f'visual_{body_index}'
+  inertial_name = f'inertial_{body_index}'
   body = etree.Element('body', name=body_name)
   body.set('pos', '0 .1 0')
   etree.SubElement(body, 'geom', {'class': 'visual', 'name': visual_name})

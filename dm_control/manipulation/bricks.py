@@ -89,8 +89,7 @@ class _Common(composer.Task):
                workspace,
                control_timestep):
     if not 2 <= num_bricks <= 6:
-      raise ValueError('`num_bricks` must be between 2 and 6, got {}.'
-                       .format(num_bricks))
+      raise ValueError(f'`num_bricks` must be between 2 and 6, got {num_bricks}.')
 
     if num_bricks > 3:
       # The default values computed by MuJoCo's compiler are too small if there
@@ -214,8 +213,9 @@ class Stack(_Common):
         `target_height` is not between 2 and `num_bricks - 1`.
     """
     if not 2 <= target_height <= num_bricks:
-      raise ValueError('`target_height` must be between 2 and {}, got {}.'
-                       .format(num_bricks, target_height))
+      raise ValueError(
+          f'`target_height` must be between 2 and {num_bricks}, got {target_height}.'
+      )
 
     super().__init__(
         arena=arena,

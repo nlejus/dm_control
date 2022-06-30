@@ -101,10 +101,7 @@ class BindingGenerator:
           is_int = False
         else:
           size *= dim
-      if is_int:
-        return size
-      else:
-        return tuple(sizes)
+      return size if is_int else tuple(sizes)
     else:
       # Recursively dereference any sizes declared in header macros
       size = codegen_util.recursive_dict_lookup(old_size,
@@ -208,19 +205,15 @@ class BindingGenerator:
           self.recurse_into_conditionals(token.if_true)
         else:
           self.recurse_into_conditionals(token.if_false)
-      # One or more declarations
-      else:
-        if token.typename:
-          self.typedefs_dict.update({token.name: token.typename})
-        elif token.value:
-          value = codegen_util.try_coerce_to_num(token.value)
+      elif token.typename:
+        self.typedefs_dict.update({token.name: token.typename})
+      elif token.value:
+        value = codegen_util.try_coerce_to_num(token.value)
           # Avoid adding function aliases.
-          if isinstance(value, str):
-            continue
-          else:
-            self.consts_dict.update({token.name: value})
-        else:
-          self.consts_dict.update({token.name: True})
+        if not isinstance(value, str):
+          self.consts_dict.update({token.name: value})
+      else:
+        self.consts_dict.update({token.name: True})
 
   # Code generation methods
   # ----------------------------------------------------------------------------
@@ -260,7 +253,7 @@ class BindingGenerator:
       f.write(self.make_header(imports))
       f.write(codegen_util.comment_line("Enums"))
       for enum_name, members in self.enums_dict.items():
-        fields = ["\"{}\"".format(name) for name in members.keys()]
+        fields = [f'\"{name}\"' for name in members.keys()]
         values = [str(value) for value in members.values()]
         s = textwrap.dedent("""
         {0} = collections.namedtuple(

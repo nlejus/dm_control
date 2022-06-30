@@ -49,8 +49,7 @@ _EMPTY_WITH_DOCSTRING_CODE = _empty_function_with_docstring.__code__.co_code
 
 
 def _callable_is_trivial(f):
-  return (f.__code__.co_code == _EMPTY_CODE or
-          f.__code__.co_code == _EMPTY_WITH_DOCSTRING_CODE)
+  return f.__code__.co_code in [_EMPTY_CODE, _EMPTY_WITH_DOCSTRING_CODE]
 
 
 class ObservationPadding(enum.Enum):
@@ -85,7 +84,7 @@ class _EnvironmentHooks:
     self._task = task
     self._episode_step_count = 0
     for hook_name in HOOK_NAMES:
-      slot_name = '_' + hook_name
+      slot_name = f'_{hook_name}'
       setattr(self, slot_name, _Hook())
     self.refresh_entity_hooks()
 
@@ -98,14 +97,14 @@ class _EnvironmentHooks:
         # Ignore any hook that is a no-op to avoid function call overhead.
         if not _callable_is_trivial(entity_hook):
           hooks.append(entity_hook)
-      getattr(self, '_' + hook_name).entity_hooks = hooks
+      getattr(self, f'_{hook_name}').entity_hooks = hooks
 
   def add_extra_hook(self, hook_name, hook_callable):
     if hook_name not in HOOK_NAMES:
       raise ValueError('{!r} is not a valid hook name'.format(hook_name))
     if not callable(hook_callable):
       raise ValueError('{!r} is not a callable'.format(hook_callable))
-    getattr(self, '_' + hook_name).extra_hooks.append(hook_callable)
+    getattr(self, f'_{hook_name}').extra_hooks.append(hook_callable)
 
   def initialize_episode_mjcf(self, random_state):
     self._task.initialize_episode_mjcf(random_state)
@@ -201,10 +200,9 @@ class _CommonEnvironment:
           f'enum value: got {delayed_observation_padding}')
 
     self._task = task
-    if not isinstance(random_state, np.random.RandomState):
-      self._random_state = np.random.RandomState(random_state)
-    else:
-      self._random_state = random_state
+    self._random_state = (random_state
+                          if isinstance(random_state, np.random.RandomState) else
+                          np.random.RandomState(random_state))
     self._hooks = _EnvironmentHooks(self._task)
     self._time_limit = time_limit
     self._raise_exception_on_physics_error = raise_exception_on_physics_error
@@ -395,12 +393,11 @@ class Environment(_CommonEnvironment, dm_env.Environment):
           self._observation_updater.update()
       physics_is_divergent = False
     except control.PhysicsError as e:
-      if not self._raise_exception_on_physics_error:
-        logging.warning(e)
-        physics_is_divergent = True
-      else:
+      if self._raise_exception_on_physics_error:
         raise
 
+      logging.warning(e)
+      physics_is_divergent = True
     self._hooks.after_step(self._physics_proxy, self._random_state)
     self._observation_updater.update()
 
@@ -420,9 +417,8 @@ class Environment(_CommonEnvironment, dm_env.Environment):
 
     if not terminating:
       return dm_env.TimeStep(dm_env.StepType.MID, reward, discount, obs)
-    else:
-      self._reset_next_step = True
-      return dm_env.TimeStep(dm_env.StepType.LAST, reward, discount, obs)
+    self._reset_next_step = True
+    return dm_env.TimeStep(dm_env.StepType.LAST, reward, discount, obs)
 
   def action_spec(self):
     """Returns the action specification for this environment."""
@@ -440,10 +436,7 @@ class Environment(_CommonEnvironment, dm_env.Environment):
       `specs.Array`s.
     """
     task_reward_spec = self._task.get_reward_spec()
-    if task_reward_spec is not None:
-      return task_reward_spec
-    else:
-      return super().reward_spec()
+    return super().reward_spec() if task_reward_spec is None else task_reward_spec
 
   def discount_spec(self):
     """Describes the discount returned by this environment.

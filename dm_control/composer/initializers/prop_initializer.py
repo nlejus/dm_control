@@ -259,15 +259,14 @@ class PropPlacer(composer.Initializer):
                 max_qvel=max_qvel,
                 max_qacc=max_qacc,
             ))
-      else:
-        log_str = _SETTLING_PHYSICS_FAILED.format(
-            max_attempts='%s',
-            max_time='%s',
-            max_qvel='%s',
-            max_qacc='%s',
-        )
-        logging.warning(log_str, self._max_settle_physics_attempts,
-                        self._max_settle_physics_time, max_qvel, max_qacc)
+      log_str = _SETTLING_PHYSICS_FAILED.format(
+          max_attempts='%s',
+          max_time='%s',
+          max_qvel='%s',
+          max_qacc='%s',
+      )
+      logging.warning(log_str, self._max_settle_physics_attempts,
+                      self._max_settle_physics_time, max_qvel, max_qacc)
 
       return False
 

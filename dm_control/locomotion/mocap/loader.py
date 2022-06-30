@@ -46,13 +46,10 @@ class TrajectoryLoader(metaclass=abc.ABCMeta):
     """
     self._trajectory_class = trajectory_class
     if not isinstance(proto_modifier, collections.abc.Iterable):
-      if proto_modifier is None:  # backwards compatibility
-        proto_modifier = ()
-      else:
-        proto_modifier = (proto_modifier,)
+      proto_modifier = () if proto_modifier is None else (proto_modifier, )
     for modifier in proto_modifier:
       if not callable(modifier):
-        raise ValueError('{} is not callable'.format(modifier))
+        raise ValueError(f'{modifier} is not callable')
     self._proto_modifiers = proto_modifier
 
   @abc.abstractmethod
@@ -147,10 +144,10 @@ class HDF5TrajectoryLoader(TrajectoryLoader):
           walker_proto.markers.marker,
           h5_walker['markers'], h5_prefix='marker')
 
-      walker_fields = dict()
-      for field in mocap_pb2.WalkerPose.DESCRIPTOR.fields:
-        walker_fields[field.name] = np.asarray(h5_walker[field.name])
-
+      walker_fields = {
+          field.name: np.asarray(h5_walker[field.name])
+          for field in mocap_pb2.WalkerPose.DESCRIPTOR.fields
+      }
       for timestep_id, timestep in enumerate(proto.timesteps):
         walker_timestep = timestep.walkers.add()
         for k, v in walker_fields.items():
@@ -162,10 +159,10 @@ class HDF5TrajectoryLoader(TrajectoryLoader):
       prop_proto = proto.props.add()
       self._fill_primitive_proto_fields(prop_proto, h5_prop)
 
-      prop_fields = dict()
-      for field in mocap_pb2.PropPose.DESCRIPTOR.fields:
-        prop_fields[field.name] = np.asarray(h5_prop[field.name])
-
+      prop_fields = {
+          field.name: np.asarray(h5_prop[field.name])
+          for field in mocap_pb2.PropPose.DESCRIPTOR.fields
+      }
       for timestep_id, timestep in enumerate(proto.timesteps):
         prop_timestep = timestep.props.add()
         for k, v in prop_fields.items():

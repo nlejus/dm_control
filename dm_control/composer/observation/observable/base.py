@@ -149,7 +149,7 @@ class Observable(metaclass=abc.ABCMeta):
     """
     for key, value in kwargs.items():
       if not hasattr(self, key):
-        raise AttributeError('Cannot add attribute %s in configure.' % key)
+        raise AttributeError(f'Cannot add attribute {key} in configure.')
       self.__setattr__(key, value)
 
 

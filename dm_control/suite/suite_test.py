@@ -187,8 +187,8 @@ class SuiteTest(parameterized.TestCase):
   def assertCorrectColors(self, physics, reward):
     colors = physics.named.model.mat_rgba
     for material_name in ('self', 'effector', 'target'):
-      highlight = colors[material_name + '_highlight']
-      default = colors[material_name + '_default']
+      highlight = colors[f'{material_name}_highlight']
+      default = colors[f'{material_name}_default']
       blend_coef = reward ** 4
       expected = blend_coef * highlight + (1.0 - blend_coef) * default
       actual = colors[material_name]
@@ -284,8 +284,8 @@ class SuiteTest(parameterized.TestCase):
     obs2 = env.reset().observation
     self.assertFalse(
         all(np.all(obs1[k] == obs2[k]) for k in obs1),
-        'Two consecutive initial states have identical observations.\n'
-        'First: {}\nSecond: {}'.format(obs1, obs2))
+        f'Two consecutive initial states have identical observations.\nFirst: {obs1}\nSecond: {obs2}',
+    )
 
 if __name__ == '__main__':
   absltest.main()

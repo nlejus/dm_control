@@ -81,6 +81,7 @@ Summary of terminology:
   name.
 """
 
+
 import abc
 import collections
 import weakref
@@ -111,7 +112,7 @@ _COLUMN_NAMES = {
 # Mapping from keys of _COLUMN_NAMES to sets of field names whose columns are
 # addressable using those names.
 _COLUMN_ID_TO_FIELDS = {
-    'xyz': set([
+    'xyz': {
         'body_pos',
         'body_ipos',
         'body_inertia',
@@ -145,8 +146,8 @@ _COLUMN_ID_TO_FIELDS = {
         'wrap_xpos',
         'subtree_linvel',
         'subtree_angmom',
-    ]),
-    'quat': set([
+    },
+    'quat': {
         'body_quat',
         'body_iquat',
         'geom_quat',
@@ -154,22 +155,9 @@ _COLUMN_ID_TO_FIELDS = {
         'cam_quat',
         'mocap_quat',
         'xquat',
-    ]),
-    'mat': set([
-        'cam_mat0',
-        'xmat',
-        'ximat',
-        'geom_xmat',
-        'site_xmat',
-        'cam_xmat',
-    ]),
-    'rgba': set([
-        'geom_rgba',
-        'site_rgba',
-        'skin_rgba',
-        'mat_rgba',
-        'tendon_rgba',
-    ])
+    },
+    'mat': {'cam_mat0', 'xmat', 'ximat', 'geom_xmat', 'site_xmat', 'cam_xmat'},
+    'rgba': {'geom_rgba', 'site_rgba', 'skin_rgba', 'mat_rgba', 'tendon_rgba'},
 }
 
 
@@ -355,12 +343,12 @@ class RegularNamedAxis(Axis):
     elif isinstance(key_item, (list, np.ndarray)):
       # Cast lists to numpy arrays.
       key_item = np.array(key_item, copy=False)
-      original_shape = key_item.shape
-
       # We assume that either all or none of the items in the array are strings
       # representing names. If there is a mix, we will let NumPy throw an error
       # when trying to index with the returned item.
       if isinstance(key_item.flat[0], str):
+        original_shape = key_item.shape
+
         key_item = np.array([self._names_to_offsets[util.to_native_string(k)]
                              for k in key_item.flat])
         # Ensure the output shape is the same as that of the input.
@@ -474,8 +462,9 @@ class FieldIndexer:
     if not return_tuple:
       key = (key,)
     if len(key) > self._field.ndim:
-      raise IndexError('Index tuple has {} elements, but array has only {} '
-                       'dimensions.'.format(len(key), self._field.ndim))
+      raise IndexError(
+          f'Index tuple has {len(key)} elements, but array has only {self._field.ndim} dimensions.'
+      )
     new_key = tuple(axis.convert_key_item(key_item)
                     for axis, key_item in zip(self._axes, key))
     if not return_tuple:
@@ -524,7 +513,7 @@ class FieldIndexer:
       size = self._field.shape[dim_idx]
       try:
         name_len = max(len(name) for name in axis.names)
-        name_arr = np.zeros(size, dtype='S{}'.format(name_len))
+        name_arr = np.zeros(size, dtype=f'S{name_len}')
         for name in axis.names:
           if name:
             # Use the `Axis` object to convert the name into a numpy index, then
@@ -608,7 +597,7 @@ def struct_indexer(struct, struct_name, size_to_axis_indexer):
   """
   struct_name = struct_name.lower()
   if struct_name not in sizes.array_sizes:
-    raise ValueError('Unrecognized struct name ' + struct_name)
+    raise ValueError(f'Unrecognized struct name {struct_name}')
 
   array_sizes = sizes.array_sizes[struct_name]
 
@@ -633,10 +622,7 @@ def struct_indexer(struct, struct_name, size_to_axis_indexer):
         size_names = (size_names[0], new_col_size)
         break
 
-    axis_indexers = []
-    for size_name in size_names:
-      axis_indexers.append(size_to_axis_indexer[size_name])
-
+    axis_indexers = [size_to_axis_indexer[size_name] for size_name in size_names]
     field_indexers[field_name] = FieldIndexer(
         parent_struct=struct,
         field_name=field_name,

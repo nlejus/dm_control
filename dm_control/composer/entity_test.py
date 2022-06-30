@@ -344,16 +344,8 @@ class EntityTest(parameterized.TestCase):
 
     physics = mjcf.Physics.from_mjcf_model(test_arena.mjcf_model)
 
-    if quaternion is None:
-      ground_truth_quat = _NO_ROTATION
-    else:
-      ground_truth_quat = quaternion
-
-    if position is None:
-      ground_truth_pos = np.zeros(shape=(3,))
-    else:
-      ground_truth_pos = position
-
+    ground_truth_quat = _NO_ROTATION if quaternion is None else quaternion
+    ground_truth_pos = np.zeros(shape=(3,)) if position is None else position
     subentity.set_pose(physics, position=position, quaternion=quaternion)
 
     np.testing.assert_array_equal(physics.bind(frame).xpos, ground_truth_pos)

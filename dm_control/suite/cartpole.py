@@ -111,19 +111,19 @@ def _make_model(n_poles):
   parent = mjcf.find('./worldbody/body/body')  # Find first pole.
   # Make chain of poles.
   for pole_index in range(2, n_poles+1):
-    child = etree.Element('body', name='pole_{}'.format(pole_index),
-                          pos='0 0 1', childclass='pole')
-    etree.SubElement(child, 'joint', name='hinge_{}'.format(pole_index))
-    etree.SubElement(child, 'geom', name='pole_{}'.format(pole_index))
+    child = etree.Element(
+        'body', name=f'pole_{pole_index}', pos='0 0 1', childclass='pole')
+    etree.SubElement(child, 'joint', name=f'hinge_{pole_index}')
+    etree.SubElement(child, 'geom', name=f'pole_{pole_index}')
     parent.append(child)
     parent = child
   # Move plane down.
   floor = mjcf.find('./worldbody/geom')
-  floor.set('pos', '0 0 {}'.format(1 - n_poles - .05))
+  floor.set('pos', f'0 0 {1 - n_poles - .05}')
   # Move cameras back.
   cameras = mjcf.findall('./worldbody/camera')
-  cameras[0].set('pos', '0 {} 1'.format(-1 - 2*n_poles))
-  cameras[1].set('pos', '0 {} 2'.format(-2*n_poles))
+  cameras[0].set('pos', f'0 {-1 - 2*n_poles} 1')
+  cameras[1].set('pos', f'0 {-2 * n_poles} 2')
   return etree.tostring(mjcf, pretty_print=True)
 
 

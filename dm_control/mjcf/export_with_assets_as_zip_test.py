@@ -55,7 +55,7 @@ class ExportWithAssetsAsZipTest(parameterized.TestCase):
     # Check that the only directory is named `model_name`/, and put all the
     # contents under any directory in a dict a directory in a dict.
     zip_file_contents = {}
-    zip_filename = os.path.join(out_dir, (model_name + '.zip'))
+    zip_filename = os.path.join(out_dir, f'{model_name}.zip')
     self.assertTrue(zipfile.is_zipfile(zip_filename))
     with zipfile.ZipFile(zip_filename, 'r') as zip_file:
       for zip_info in zip_file.infolist():
@@ -68,7 +68,7 @@ class ExportWithAssetsAsZipTest(parameterized.TestCase):
           self.assertEqual(os.path.join(model_name), zip_info.filename)
 
     # Check that the output directory contains an XML file of the correct name.
-    xml_filename = os.path.join(model_name, model_name) + '.xml'
+    xml_filename = f'{os.path.join(model_name, model_name)}.xml'
     self.assertIn(xml_filename, zip_file_contents)
 
     # Check that its contents match the output of `mjcf_model.to_xml_string()`.
@@ -87,7 +87,7 @@ class ExportWithAssetsAsZipTest(parameterized.TestCase):
     out_dir = self.create_tempdir().full_path
     mjcf_model = mjcf.from_path(_TEST_MODEL_WITH_ASSETS)
     mjcf.export_with_assets_as_zip(mjcf_model, out_dir, model_name=None)
-    expected_name = mjcf_model.model + '.zip'
+    expected_name = f'{mjcf_model.model}.zip'
     self.assertTrue(os.path.isfile(os.path.join(out_dir, expected_name)))
 
 

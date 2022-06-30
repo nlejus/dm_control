@@ -337,28 +337,29 @@ class PhysicsTest(parameterized.TestCase):
   def test_actuator_state_binding(self, model_or_data, attribute_name):
 
     def make_model_with_mixed_actuators():
-      actuators = []
-      is_stateful = []
       root = mjcf.RootElement()
       body = root.worldbody.add('body')
       body.add('geom', type='sphere', size=[0.1])
       slider = body.add('joint', type='slide', name='slide_joint')
-      # Third-order `general` actuator.
-      actuators.append(
+      actuators = [
           root.actuator.add(
-              'general', dyntype='integrator', biastype='affine',
-              dynprm=[1, 0, 0], joint=slider, name='general_act'))
-      is_stateful.append(True)
+              'general',
+              dyntype='integrator',
+              biastype='affine',
+              dynprm=[1, 0, 0],
+              joint=slider,
+              name='general_act',
+          )
+      ]
       # Cylinder actuators are also third-order.
       actuators.append(
           root.actuator.add('cylinder', joint=slider, name='cylinder_act'))
-      is_stateful.append(True)
       # A second-order actuator, added after the third-order actuators. The
       # actuators will be automatically reordered in the generated XML so that
       # the second-order actuator comes first.
       actuators.append(
           root.actuator.add('velocity', joint=slider, name='velocity_act'))
-      is_stateful.append(False)
+      is_stateful = [True, True, False]
       return root, actuators, is_stateful
 
     model, actuators, is_stateful = make_model_with_mixed_actuators()
@@ -373,15 +374,14 @@ class PhysicsTest(parameterized.TestCase):
         binding, attribute_name, named_indexer, stateful_actuator_names)
 
   def test_bind_stateless_actuators_only(self):
-    actuators = []
     root = mjcf.RootElement()
     body = root.worldbody.add('body')
     body.add('geom', type='sphere', size=[0.1])
     slider = body.add('joint', type='slide', name='slide_joint')
-    actuators.append(
-        root.actuator.add('velocity', joint=slider, name='velocity_act'))
-    actuators.append(
-        root.actuator.add('motor', joint=slider, name='motor_act'))
+    actuators = [
+        root.actuator.add('velocity', joint=slider, name='velocity_act'),
+        root.actuator.add('motor', joint=slider, name='motor_act'),
+    ]
     # `act` should be an empty array if there are no stateful actuators.
     physics = mjcf.Physics.from_mjcf_model(root)
     self.assertEqual(physics.bind(actuators).act.shape, (0,))

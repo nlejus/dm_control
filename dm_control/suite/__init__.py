@@ -54,14 +54,8 @@ def _get_tasks(tag):
 
     domain = _DOMAINS[domain_name]
 
-    if tag is None:
-      tasks_in_domain = domain.SUITE
-    else:
-      tasks_in_domain = domain.SUITE.tagged(tag)
-
-    for task_name in tasks_in_domain.keys():
-      result.append((domain_name, task_name))
-
+    tasks_in_domain = domain.SUITE if tag is None else domain.SUITE.tagged(tag)
+    result.extend((domain_name, task_name) for task_name in tasks_in_domain.keys())
   return tuple(result)
 
 

@@ -27,10 +27,7 @@ def get_freejoint(element):
     return element.freejoint
   else:
     joints = element.find_all('joint', immediate_children_only=True)
-    for joint in joints:
-      if joint.type == 'free':
-        return joint
-    return None
+    return next((joint for joint in joints if joint.type == 'free'), None)
 
 
 def get_attachment_frame(mjcf_model):
@@ -44,8 +41,7 @@ def get_frame_freejoint(mjcf_model):
 
 def get_frame_joints(mjcf_model):
   """Retrieves all joints belonging to the attachment frame of an MJCF model."""
-  frame = get_attachment_frame(mjcf_model)
-  if frame:
+  if frame := get_attachment_frame(mjcf_model):
     return frame.find_all('joint', immediate_children_only=True)
   else:
     return None
@@ -68,14 +64,11 @@ def commit_defaults(element, attributes=None):
     dclass = element.root.default
 
   while dclass != element.root:
-    if element.tag in _ACTUATOR_TAGS:
-      tags = _ACTUATOR_TAGS
-    else:
-      tags = (element.tag,)
+    tags = _ACTUATOR_TAGS if element.tag in _ACTUATOR_TAGS else (element.tag, )
     for tag in tags:
       default_element = getattr(dclass, tag)
       for name, value in default_element.get_attributes().items():
-        if attributes is None or name in attributes:
-          if hasattr(element, name) and getattr(element, name) is None:
-            setattr(element, name, value)
+        if ((attributes is None or name in attributes)
+            and hasattr(element, name) and getattr(element, name) is None):
+          setattr(element, name, value)
     dclass = dclass.parent

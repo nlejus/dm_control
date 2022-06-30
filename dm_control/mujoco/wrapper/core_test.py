@@ -61,8 +61,7 @@ class CoreTest(parameterized.TestCase):
         else:
           self.assertEqual(actual_value, expected_value)
       except AssertionError as e:
-        self.fail("Attribute '{}' differs from expected value: {}"
-                  .format(name, str(e)))
+        self.fail(f"Attribute '{name}' differs from expected value: {str(e)}")
 
   def testLoadXML(self):
     with open(HUMANOID_XML_PATH, "r") as f:

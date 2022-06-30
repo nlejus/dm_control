@@ -63,7 +63,7 @@ class DebuggingTest(absltest.TestCase):
   def assertRaisesTestCodeRef(self, line_ref):
     filename, _ = os.path.splitext(test_code.__file__)
     expected_message = (
-        filename + '.py:' + str(test_code.LINE_REF[line_ref].line_number))
+        f'{filename}.py:{str(test_code.LINE_REF[line_ref].line_number)}')
     print(expected_message)
     with self.assertRaisesRegex(ValueError, expected_message):
       yield
@@ -165,9 +165,9 @@ class DebuggingTest(absltest.TestCase):
         # Only uninstrumented lines are allowed to have no metadata.
         self.assertIsNotNone(uninstrumented_pattern.match(xml_line))
       else:
-        xml_element = xml_line_match.group(1)
-        debug_id = int(xml_line_match.group(2))
-        with open(os.path.join(self.dump_dir, str(debug_id) + '.dump')) as f:
+        xml_element = xml_line_match[1]
+        debug_id = int(xml_line_match[2])
+        with open(os.path.join(self.dump_dir, f'{debug_id}.dump')) as f:
           element_dump = f.read()
         self.assertIn(xml_element, element_dump)
 

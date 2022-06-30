@@ -374,7 +374,7 @@ class AttributeTest(parameterized.TestCase):
       contents = f.read()
     _, basename = os.path.split(value)
     prefix, extension = os.path.splitext(basename)
-    expected_xml = prefix + '-' + hashlib.sha1(contents).hexdigest() + extension
+    expected_xml = f'{prefix}-{hashlib.sha1(contents).hexdigest()}{extension}'
     mujoco.files.text_path = basepath
     text_file = mujoco.files.add('text', file=value)
     expected_value = attribute.Asset(
@@ -398,7 +398,7 @@ class AttributeTest(parameterized.TestCase):
   def testFileFromAssetsDict(self):
     prefix = 'fake_filename'
     extension = '.whatever'
-    path = 'invalid/path/' + prefix + extension
+    path = f'invalid/path/{prefix}{extension}'
     contents = 'Fake contents'
     assets = {path: contents}
     mujoco = element.RootElement(assets=assets)
@@ -433,10 +433,10 @@ class AttributeTest(parameterized.TestCase):
     # of a new element to fail
     for name, _ in attributes:
       attributes_dict = {key: value for key, value in attributes if key != name}
-      with self.assertRaisesRegex(AttributeError, name + '.+ is required'):
+      with self.assertRaisesRegex(AttributeError, f'{name}.+ is required'):
         mujoco.add('required', **attributes_dict)
 
-    attributes_dict = {key: value for key, value in attributes}
+    attributes_dict = dict(attributes)
     mujoco.add('required', **attributes_dict)
     # Should not be allowed to clear each required attribute after the fact
     for name, _ in attributes:

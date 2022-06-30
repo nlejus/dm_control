@@ -66,7 +66,7 @@ def make_model(floor_size, remove_ball):
 
   # set floor size.
   floor = xml_tools.find_element(mjcf, 'geom', 'floor')
-  floor.attrib['size'] = str(floor_size) + ' ' + str(floor_size) + ' .1'
+  floor.attrib['size'] = f'{str(floor_size)} {str(floor_size)} .1'
 
   if remove_ball:
     # Remove ball, target and walls.
@@ -79,7 +79,7 @@ def make_model(floor_size, remove_ball):
     head_cam = xml_tools.find_element(mjcf, 'camera', 'head')
     head_cam.getparent().remove(head_cam)
     for wall_name in ['px', 'nx', 'py', 'ny']:
-      wall = xml_tools.find_element(mjcf, 'geom', 'wall_' + wall_name)
+      wall = xml_tools.find_element(mjcf, 'geom', f'wall_{wall_name}')
       wall.getparent().remove(wall)
 
   return etree.tostring(mjcf, pretty_print=True)

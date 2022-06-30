@@ -32,8 +32,7 @@ _ASSETS_PATH = os.path.join(os.path.dirname(__file__), 'assets', 'pitch')
 
 
 def _get_texture(name):
-  contents = resources.GetResource(
-      os.path.join(_ASSETS_PATH, '{}.png'.format(name)))
+  contents = resources.GetResource(os.path.join(_ASSETS_PATH, f'{name}.png'))
   return mjcf.Asset(contents, '.png')
 
 

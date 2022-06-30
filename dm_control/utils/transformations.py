@@ -97,19 +97,18 @@ def _rmat_to_euler_xyx(rmat):
       y = np.arccos(_clip_within_precision(rmat[0, 0], -1., 1.))
       x0 = np.arctan2(rmat[1, 0], -rmat[2, 0])
       x1 = np.arctan2(rmat[0, 1], rmat[0, 2])
-      return np.array([x0, y, x1])
     else:
       # Not a unique solution:  x1_angle - x0_angle = atan2(-r12,r11)
       y = np.pi
       x0 = -np.arctan2(-rmat[1, 2], rmat[1, 1])
       x1 = 0.0
-      return np.array([x0, y, x1])
   else:
     # Not a unique solution:  x1_angle + x0_angle = atan2(-r12,r11)
     y = 0.0
     x0 = -np.arctan2(-rmat[1, 2], rmat[1, 1])
     x1 = 0.0
-    return np.array([x0, y, x1])
+
+  return np.array([x0, y, x1])
 
 
 def _rmat_to_euler_zyx(rmat):
@@ -296,15 +295,11 @@ def euler_to_rmat(euler_vec, ordering='ZXZ', full=False):
 
   euler_vec = np.atleast_2d(euler_vec)
 
-  rots = []
-  for i in range(len(rotations)):
-    rots.append(rotations[i](euler_vec[:, i], full))
-
-  if rots[0].ndim == 3:
-    result = _batch_mm(_batch_mm(rots[0], rots[1]), rots[2])
-    return result.squeeze()
-  else:
+  rots = [rotations[i](euler_vec[:, i], full) for i in range(len(rotations))]
+  if rots[0].ndim != 3:
     return (rots[0].dot(rots[1])).dot(rots[2])
+  result = _batch_mm(_batch_mm(rots[0], rots[1]), rots[2])
+  return result.squeeze()
 
 
 def quat_conj(quat):
@@ -472,11 +467,10 @@ def quat_to_axisangle(quat):
 
   if angle < _TOL:
     return np.zeros(3)
-  else:
-    qn = np.sin(angle/2)
-    angle = (angle + np.pi) % (2 * np.pi) - np.pi
-    axis = quat[1:4] / qn
-    return axis * angle
+  qn = np.sin(angle/2)
+  angle = (angle + np.pi) % (2 * np.pi) - np.pi
+  axis = quat[1:4] / qn
+  return axis * angle
 
 
 def quat_to_euler(quat, ordering='XYZ'):

@@ -71,7 +71,7 @@ class ImageUtilsTest(parameterized.TestCase):
       func()
 
     def validate_saved_file(name, expected_contents):
-      path = os.path.join(output_dir, '{}-{}.png'.format('func', name))
+      path = os.path.join(output_dir, f'func-{name}.png')
       self.assertTrue(os.path.isfile(path))
       image = Image.open(path)
       actual_contents = np.array(image)

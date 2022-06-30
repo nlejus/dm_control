@@ -30,7 +30,7 @@ def rescale_subtree(body, position_factor, size_factor):
       child.pos *= position_factor
     if getattr(child, 'size', None) is not None:
       child.size *= size_factor
-    if child.tag == 'body' or child.tag == 'worldbody':
+    if child.tag in ['body', 'worldbody']:
       rescale_subtree(child, position_factor, size_factor)
 
 
@@ -47,8 +47,7 @@ def rescale_humanoid(walker, position_factor, size_factor=None, mass=None):
     current_mass = physics.bind(walker.root_body).subtreemass
     mass_factor = mass / current_mass
     for body in walker.root_body.find_all('body'):
-      inertial = getattr(body, 'inertial', None)
-      if inertial:
+      if inertial := getattr(body, 'inertial', None):
         inertial.mass *= mass_factor
     for geom in walker.root_body.find_all('geom'):
       if geom.mass is not None:

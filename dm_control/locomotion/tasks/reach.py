@@ -133,7 +133,7 @@ class TwoTouch(composer.Task):
         break
       target_builder = self._target_builders[target_type]
       for i in range(num):
-        target = target_builder(name='target_{}_{}'.format(target_type, i))
+        target = target_builder(name=f'target_{target_type}_{i}')
         targets.append(target)
       all_targets.append(targets)
     return all_targets
@@ -270,9 +270,11 @@ class TwoTouch(composer.Task):
         self._do_time_out = True
         self._state_logic = TwoTouchState.NO_SECOND_TOUCH
         self._second_touch_time = physics.time()
-    elif (self._state_logic == TwoTouchState.TOUCHED_TWICE or
-          self._state_logic == TwoTouchState.TOUCHED_TOO_SOON or
-          self._state_logic == TwoTouchState.NO_SECOND_TOUCH):
+    elif self._state_logic in [
+          TwoTouchState.TOUCHED_TWICE,
+          TwoTouchState.TOUCHED_TOO_SOON,
+          TwoTouchState.NO_SECOND_TOUCH,
+      ]:
       # hold here due to timeout
       if self._do_time_out:
         if physics.time() > (self._second_touch_time + self._failure_timeout):
